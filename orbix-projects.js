@@ -349,6 +349,8 @@
     users: [],
     escHtml: escHtml,
     filter: 'all',
+    bhFilter: '',
+    creatorFilter: '',
     searchQuery: '',
     dbStatus: null,
     vpsSyncStatus: 'connected',
@@ -1213,6 +1215,12 @@
             }
 
             self.populateBhDropdown();
+            if (typeof self.updateFilterCountsAndMenus === 'function') {
+              self.updateFilterCountsAndMenus();
+              if (self.projects && self.projects.length) {
+                self.renderProjectsList();
+              }
+            }
           }
 
           if (cb) cb();
@@ -1221,6 +1229,9 @@
           console.warn('User synchronization offline:', err.message);
           self.users = self.users || [];
           self.populateBhDropdown();
+          if (typeof self.updateFilterCountsAndMenus === 'function') {
+            self.updateFilterCountsAndMenus();
+          }
           if (cb) cb();
         });
     },
@@ -1349,9 +1360,7 @@
       }
 
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
-      var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
-        '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser.id) +
+      var url = '/api/projects?userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
@@ -1478,25 +1487,426 @@
       }
     },
 
+    _isProjectOwner: function (p) {
+      if (!p || !this.currentUser) return false;
+      var curId = String(this.currentUser.id || '').trim();
+      var curEmail = String(this.currentUser.email || '').trim().toLowerCase();
+      var pCreatedBy = String(p.created_by || p.createdBy || '').trim();
+      var pOwnerEmail = String(p.owner_email || p.ownerEmail || '').trim().toLowerCase();
+      if (curId && pCreatedBy && pCreatedBy === curId) return true;
+      if (curEmail && pOwnerEmail && pOwnerEmail === curEmail) return true;
+      return false;
+    },
+
+    _isProjectSharedWithMe: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      var isSharedFlag = !!(p.is_shared || p.isShared);
+      return (isSharedFlag && !isOwn) || (isOwn && hasShareNotice);
+    },
+
+    _isMyProject: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      return isOwn && !hasShareNotice;
+    },
+
+    _getProjectBh: function (p) {
+      if (!p) return '';
+      var details = (p.data && p.data.details) ? p.data.details : {};
+      return String(p.bh_name || p.bhName || details.bhName || details.designerName || '').trim();
+    },
+
+    _getProjectCreatorInfo: function (p) {
+      var isOwn = this._isProjectOwner(p);
+      var rawId = String((p && (p.created_by || p.createdBy)) || '').trim();
+      var rawEmail = String((p && (p.owner_email || p.ownerEmail)) || '').trim().toLowerCase();
+      var rawName = String((p && (p.owner_name || p.ownerName)) || '').trim();
+      var matchedUser = null;
+
+      if (this.users && this.users.length) {
+        if (rawId) {
+          matchedUser = this.users.find(function (u) { return u && String(u.id) === rawId; }) || null;
+        }
+        if (!matchedUser && rawEmail) {
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.email || '').trim().toLowerCase() === rawEmail;
+          }) || null;
+        }
+        if (!matchedUser && rawName) {
+          var lowerRaw = rawName.toLowerCase();
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.name || '').trim().toLowerCase() === lowerRaw;
+          }) || null;
+        }
+      }
+      if (!matchedUser && isOwn && this.currentUser) {
+        matchedUser = this.currentUser;
+      }
+
+      var displayName = (matchedUser && matchedUser.name) || rawName || (isOwn && this.currentUser ? this.currentUser.name : '') || rawEmail || 'Cookscape Designer';
+      var key = (matchedUser && matchedUser.id)
+        ? ('id:' + String(matchedUser.id))
+        : (rawId ? ('id:' + rawId) : (rawEmail ? ('email:' + rawEmail) : ('name:' + displayName.toLowerCase())));
+
+      return {
+        key: key,
+        name: displayName,
+        email: (matchedUser && matchedUser.email) || rawEmail || '',
+        isMe: isOwn
+      };
+    },
+
+    _matchesProjectFilters: function (p, opts) {
+      opts = opts || {};
+      var scope = opts.ignoreScope ? 'all' : (this.filter || 'all');
+      if (scope === 'mine' && !this._isMyProject(p)) return false;
+      if (scope === 'shared' && !this._isProjectSharedWithMe(p)) return false;
+
+      if (!opts.ignoreBh && this.bhFilter) {
+        var bhVal = this._getProjectBh(p);
+        if (this.bhFilter === '__unassigned__') {
+          if (bhVal) return false;
+        } else if (bhVal.toLowerCase() !== this.bhFilter.toLowerCase()) {
+          return false;
+        }
+      }
+
+      if (!opts.ignoreCreator && this.creatorFilter) {
+        var creator = this._getProjectCreatorInfo(p);
+        if (creator.key !== this.creatorFilter) return false;
+      }
+
+      var q = opts.ignoreSearch ? '' : String(this.searchQuery || '').trim().toLowerCase();
+      if (q) {
+        var details = (p.data && p.data.details) ? p.data.details : {};
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var hay = [
+          p.title,
+          p.name,
+          p.client,
+          details.clientName,
+          p.owner_name,
+          p.ownerName,
+          p.owner_email,
+          p.ownerEmail,
+          creatorInfo.name,
+          this._getProjectBh(p),
+          p.cp_code,
+          p.cpCode,
+          details.cpCode,
+          details.quoteId,
+          p.location,
+          details.location,
+          details.siteAddress,
+          p.contact_number,
+          details.contactNumber,
+          details.phone,
+          p.status
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+
+      return true;
+    },
+
+    _getFilteredProjects: function () {
+      var self = this;
+      var list = Array.isArray(this.projects) ? this.projects : [];
+      return list.filter(function (p) {
+        return self._matchesProjectFilters(p);
+      });
+    },
+
+    _closeProjectFilterMenus: function () {
+      var pairs = [
+        ['bhFilterMenu', 'bhFilterBtn'],
+        ['userFilterMenu', 'userFilterBtn']
+      ];
+      pairs.forEach(function (pair) {
+        var menu = document.getElementById(pair[0]);
+        var btn = document.getElementById(pair[1]);
+        if (menu) menu.hidden = true;
+        if (btn) {
+          btn.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    },
+
+    clearProjectFilters: function (resetScope) {
+      this.bhFilter = '';
+      this.creatorFilter = '';
+      this.searchQuery = '';
+      var searchInput = document.getElementById('projectSearchInput');
+      if (searchInput) searchInput.value = '';
+      var bhSearch = document.getElementById('bhFilterSearch');
+      if (bhSearch) bhSearch.value = '';
+      var userSearch = document.getElementById('userFilterSearch');
+      if (userSearch) userSearch.value = '';
+      if (resetScope) {
+        this.filter = 'all';
+        document.querySelectorAll('.pfilter-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-filter') === 'all');
+        });
+      }
+      this._closeProjectFilterMenus();
+      this.renderProjectsList();
+    },
+
+    _renderFilterDropdownList: function (listEl, items, selectedVal, allLabel, allCount, onSelect, filterTerm) {
+      if (!listEl) return;
+      var q = String(filterTerm || '').trim().toLowerCase();
+      var html = '';
+      if (!q) {
+        html += '<button type="button" class="pdropdown-item' + (!selectedVal ? ' is-selected' : '') + '" data-val="">' +
+          '<span class="pdropdown-item-name">' + escHtml(allLabel) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + allCount + '</span>' +
+          '</button>';
+      }
+      var shown = 0;
+      items.forEach(function (item) {
+        if (q && item.label.toLowerCase().indexOf(q) === -1) return;
+        shown++;
+        var isSel = selectedVal && String(selectedVal).toLowerCase() === String(item.value).toLowerCase();
+        html += '<button type="button" class="pdropdown-item' + (isSel ? ' is-selected' : '') + '" data-val="' + escHtml(item.value) + '">' +
+          '<span class="pdropdown-item-name">' + escHtml(item.label) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + item.count + '</span>' +
+          '</button>';
+      });
+      if (!shown && q) {
+        html = '<div class="pdropdown-empty">No matches for "' + escHtml(filterTerm) + '"</div>';
+      }
+      listEl.innerHTML = html;
+      listEl.querySelectorAll('.pdropdown-item').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          onSelect(btn.getAttribute('data-val') || '');
+        });
+      });
+    },
+
+    updateFilterCountsAndMenus: function () {
+      var self = this;
+      var allList = Array.isArray(this.projects) ? this.projects : [];
+
+      // 1. Update All / My / Shared counts (reflecting active BH, User, and Search filters)
+      var cAll = 0, cMine = 0, cShared = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreScope: true })) return;
+        cAll++;
+        if (self._isMyProject(p)) cMine++;
+        if (self._isProjectSharedWithMe(p)) cShared++;
+      });
+      var cntAllEl = document.querySelector('[data-filter-count="all"]');
+      var cntMineEl = document.querySelector('[data-filter-count="mine"]');
+      var cntSharedEl = document.querySelector('[data-filter-count="shared"]');
+      if (cntAllEl) cntAllEl.textContent = String(cAll);
+      if (cntMineEl) cntMineEl.textContent = String(cMine);
+      if (cntSharedEl) cntSharedEl.textContent = String(cShared);
+
+      // 2. Build BH options (from projects matching current scope + creator + search)
+      var bhMap = {};
+      var bhTotal = 0;
+      var unassignedCount = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreBh: true })) return;
+        bhTotal++;
+        var bh = self._getProjectBh(p);
+        if (!bh) {
+          unassignedCount++;
+          return;
+        }
+        var k = bh.toLowerCase();
+        if (!bhMap[k]) bhMap[k] = { value: bh, label: bh, count: 0 };
+        bhMap[k].count++;
+      });
+      // Ensure known Business Head users appear even if count is 0 in current scope
+      if (typeof this.getBusinessHeadUsers === 'function') {
+        this.getBusinessHeadUsers().forEach(function (bhUser) {
+          var nm = String(bhUser && bhUser.name || '').trim();
+          if (!nm) return;
+          var k = nm.toLowerCase();
+          if (!bhMap[k]) bhMap[k] = { value: nm, label: nm, count: 0 };
+        });
+      }
+      var bhItems = Object.keys(bhMap).map(function (k) { return bhMap[k]; }).sort(function (a, b) {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      if (unassignedCount > 0) {
+        bhItems.push({ value: '__unassigned__', label: 'Unassigned BH', count: unassignedCount });
+      }
+      this._bhFilterItems = bhItems;
+      this._bhFilterTotal = bhTotal;
+
+      // 3. Build Creator / User options (from projects matching current scope + BH + search)
+      var userMap = {};
+      var userTotal = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreCreator: true })) return;
+        userTotal++;
+        var info = self._getProjectCreatorInfo(p);
+        if (!userMap[info.key]) {
+          userMap[info.key] = {
+            value: info.key,
+            label: info.isMe ? (info.name + ' (You)') : info.name,
+            rawName: info.name,
+            count: 0,
+            isMe: info.isMe
+          };
+        }
+        userMap[info.key].count++;
+      });
+      var userItems = Object.keys(userMap).map(function (k) { return userMap[k]; }).sort(function (a, b) {
+        if (a.isMe && !b.isMe) return -1;
+        if (!a.isMe && b.isMe) return 1;
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      this._userFilterItems = userItems;
+      this._userFilterTotal = userTotal;
+
+      // 4. Update BH & User button labels + clear buttons
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhLbl = document.getElementById('bhFilterLabel');
+      var bhClr = document.getElementById('bhFilterClear');
+      if (bhLbl && bhBtn) {
+        if (this.bhFilter) {
+          var bhDisp = this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter;
+          bhLbl.textContent = 'BH: ' + bhDisp;
+          bhBtn.classList.add('is-filtered');
+          if (bhClr) bhClr.hidden = false;
+        } else {
+          bhLbl.textContent = 'Filter by BH';
+          bhBtn.classList.remove('is-filtered');
+          if (bhClr) bhClr.hidden = true;
+        }
+      }
+
+      var userBtn = document.getElementById('userFilterBtn');
+      var userLbl = document.getElementById('userFilterLabel');
+      var userClr = document.getElementById('userFilterClear');
+      if (userLbl && userBtn) {
+        if (this.creatorFilter) {
+          var foundUser = userItems.find(function (x) { return x.value === self.creatorFilter; });
+          if (!foundUser) {
+            for (var pi = 0; pi < allList.length; pi++) {
+              var ci = self._getProjectCreatorInfo(allList[pi]);
+              if (ci.key === self.creatorFilter) {
+                foundUser = { rawName: ci.name };
+                break;
+              }
+            }
+          }
+          var uDisp = foundUser ? foundUser.rawName : 'Selected User';
+          userLbl.textContent = 'User: ' + uDisp;
+          userBtn.classList.add('is-filtered');
+          if (userClr) userClr.hidden = false;
+        } else {
+          userLbl.textContent = 'Filter by User';
+          userBtn.classList.remove('is-filtered');
+          if (userClr) userClr.hidden = true;
+        }
+      }
+
+      var resetBtn = document.getElementById('clearProjectFiltersBtn');
+      if (resetBtn) {
+        resetBtn.hidden = !(this.bhFilter || this.creatorFilter || this.searchQuery);
+      }
+
+      // 5. Render dropdown lists
+      var bhSearchVal = (document.getElementById('bhFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('bhFilterList'),
+        bhItems,
+        this.bhFilter,
+        'All BHs',
+        bhTotal,
+        function (val) {
+          self.bhFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        bhSearchVal
+      );
+
+      var userSearchVal = (document.getElementById('userFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('userFilterList'),
+        userItems,
+        this.creatorFilter,
+        'All Users',
+        userTotal,
+        function (val) {
+          self.creatorFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        userSearchVal
+      );
+    },
+
     renderProjectsList: function () {
       var container = document.getElementById('projectsGrid');
       if (!container) return;
 
-      var countEl = document.getElementById('projectCountLabel');
-      if (countEl) {
-        countEl.textContent = this.projects.length + (this.projects.length === 1 ? ' project' : ' projects');
+      this.updateFilterCountsAndMenus();
+
+      var allTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var visibleProjects = this._getFilteredProjects();
+      var hasAnyFilter = !!(this.bhFilter || this.creatorFilter || this.searchQuery || (this.filter && this.filter !== 'all'));
+
+      var titleEl = document.getElementById('projectsSectionTitle');
+      if (titleEl) {
+        titleEl.textContent = this.filter === 'mine'
+          ? 'My Projects'
+          : (this.filter === 'shared' ? 'Shared with Me' : 'All Projects');
       }
 
-      if (!this.projects.length) {
+      var countEl = document.getElementById('projectCountLabel');
+      if (countEl) {
+        if (hasAnyFilter && allTotal > 0 && visibleProjects.length !== allTotal) {
+          countEl.textContent = visibleProjects.length + ' of ' + allTotal + ' projects';
+        } else {
+          countEl.textContent = visibleProjects.length + (visibleProjects.length === 1 ? ' project' : ' projects');
+        }
+      }
+
+      if (!visibleProjects.length) {
+        var emptyMsg = 'Create your first project or launch from a pre-set catalogue design.';
+        if (hasAnyFilter && allTotal > 0) {
+          var parts = [];
+          if (this.filter === 'mine') parts.push('My Projects');
+          if (this.filter === 'shared') parts.push('Shared with Me');
+          if (this.bhFilter) parts.push('BH: ' + (this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter));
+          if (this.creatorFilter) {
+            var uItem = (this._userFilterItems || []).find(function (u) { return u.value === OrbixProjects.creatorFilter; });
+            parts.push('User: ' + (uItem ? uItem.rawName : 'Selected'));
+          }
+          if (this.searchQuery) parts.push('"' + this.searchQuery + '"');
+          emptyMsg = 'No projects matched ' + parts.join(' • ') + '.';
+        }
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
-          '<p>' + (this.searchQuery ? 'No projects matched "' + escHtml(this.searchQuery) + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
+          '<p>' + escHtml(emptyMsg) + '</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+          (hasAnyFilter && allTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
+          '</div>' +
           '</div>';
 
+        var emptyClearBtn = document.getElementById('emptyClearFiltersBtn');
+        if (emptyClearBtn) {
+          emptyClearBtn.addEventListener('click', function () {
+            OrbixProjects.clearProjectFilters(true);
+          });
+        }
         var emptyBtn = document.getElementById('emptyCreateBtn');
         if (emptyBtn) {
           emptyBtn.addEventListener('click', function () {
@@ -1507,16 +1917,11 @@
       }
 
       var html = '';
-      for (var i = 0; i < this.projects.length; i++) {
-        var p = this.projects[i];
-        var isOwner = this.currentUser && (
-          (p.created_by && p.created_by === this.currentUser.id) ||
-          (p.createdBy && p.createdBy === this.currentUser.id) ||
-          (p.owner_email && p.owner_email === this.currentUser.email) ||
-          (p.ownerEmail && p.ownerEmail === this.currentUser.email)
-        );
-
-        var ownerName = p.owner_name || p.ownerName || (isOwner ? (this.currentUser ? this.currentUser.name : 'You') : 'Cookscape Designer');
+      for (var i = 0; i < visibleProjects.length; i++) {
+        var p = visibleProjects[i];
+        var isOwner = this._isProjectOwner(p);
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var ownerName = creatorInfo.name;
         var ownerInitials = (ownerName && ownerName !== 'You')
           ? ownerName.substring(0, 2).toUpperCase()
           : (this.currentUser ? this.currentUser.name.substring(0, 2).toUpperCase() : 'DK');
@@ -2830,15 +3235,127 @@
     initEventListeners: function () {
       var self = this;
 
-      // Filter Chips
+      // Filter Chips (All Projects / My Projects / Shared with Me)
       var filterButtons = document.querySelectorAll('.pfilter-btn');
       filterButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
           filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           self.filter = btn.getAttribute('data-filter') || 'all';
-          self.fetchProjects();
+          self.renderProjectsList();
         });
+      });
+
+      // Filter by BH & Filter by User Dropdowns
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhMenu = document.getElementById('bhFilterMenu');
+      var bhClear = document.getElementById('bhFilterClear');
+      var bhSearch = document.getElementById('bhFilterSearch');
+      var userBtn = document.getElementById('userFilterBtn');
+      var userMenu = document.getElementById('userFilterMenu');
+      var userClear = document.getElementById('userFilterClear');
+      var userSearch = document.getElementById('userFilterSearch');
+      var clearAllBtn = document.getElementById('clearProjectFiltersBtn');
+
+      if (bhBtn && bhMenu) {
+        bhBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = bhMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            bhMenu.hidden = false;
+            bhBtn.classList.add('is-open');
+            bhBtn.setAttribute('aria-expanded', 'true');
+            if (bhSearch) {
+              bhSearch.value = '';
+              setTimeout(function () { bhSearch.focus(); }, 20);
+            }
+          }
+        });
+        bhMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (bhClear) {
+        bhClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.bhFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (bhSearch) {
+        bhSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('bhFilterList'),
+            self._bhFilterItems || [],
+            self.bhFilter,
+            'All BHs',
+            self._bhFilterTotal || 0,
+            function (val) {
+              self.bhFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            bhSearch.value
+          );
+        });
+      }
+
+      if (userBtn && userMenu) {
+        userBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = userMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            userMenu.hidden = false;
+            userBtn.classList.add('is-open');
+            userBtn.setAttribute('aria-expanded', 'true');
+            if (userSearch) {
+              userSearch.value = '';
+              setTimeout(function () { userSearch.focus(); }, 20);
+            }
+          }
+        });
+        userMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (userClear) {
+        userClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.creatorFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (userSearch) {
+        userSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('userFilterList'),
+            self._userFilterItems || [],
+            self.creatorFilter,
+            'All Users',
+            self._userFilterTotal || 0,
+            function (val) {
+              self.creatorFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            userSearch.value
+          );
+        });
+      }
+
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function () {
+          self.clearProjectFilters(false);
+        });
+      }
+
+      document.addEventListener('click', function () {
+        self._closeProjectFilterMenus();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') self._closeProjectFilterMenus();
       });
 
       // Search input
@@ -2849,8 +3366,8 @@
           clearTimeout(debounce);
           debounce = setTimeout(function () {
             self.searchQuery = searchInput.value.trim();
-            self.fetchProjects();
-          }, 200);
+            self.renderProjectsList();
+          }, 120);
         });
       }
 

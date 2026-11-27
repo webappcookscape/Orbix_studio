@@ -1976,28 +1976,116 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 /* Toolbar */
 .ptoolbar{
   display:flex;justify-content:space-between;align-items:center;
-  gap:16px;flex-wrap:wrap;
+  gap:10px 14px;flex-wrap:wrap;
 }
 .psearch-box{
   display:flex;align-items:center;gap:8px;background:#F8FAFC;
   border:1px solid #CBD5E1;border-radius:8px;padding:8px 12px;
-  flex:1 1 280px;max-width:440px;
+  flex:1 1 240px;max-width:340px;min-width:210px;
 }
 .psearch-box svg{color:#64748B;flex:0 0 auto}
 .psearch-box input{
   border:none;background:transparent;outline:none;font-size:13px;
   color:#1E293B;width:100%;
 }
-.pfilters{display:flex;gap:6px;flex-wrap:wrap}
+.pdropdown-filters{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.pdropdown-wrap{
+  position:relative;
+}
+.pdropdown-btn{
+  display:inline-flex;align-items:center;gap:7px;height:34px;
+  font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.03em;
+  padding:0 11px;border-radius:7px;border:1px solid #CBD5E1;
+  background:#FFFFFF;color:#334155;cursor:pointer;transition:all .15s ease;
+  max-width:220px;white-space:nowrap;
+}
+.pdropdown-btn:hover{background:#F8FAFC;border-color:#94A3B8;color:#0F172A}
+.pdropdown-btn.is-open{border-color:var(--blue);box-shadow:0 0 0 2px rgba(211,47,47,.12)}
+.pdropdown-btn.is-filtered{
+  background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
+}
+.pdropdown-btn .pdd-ico{flex:0 0 auto;opacity:.85}
+.pdropdown-btn .pdd-label{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pdropdown-btn .pdd-clear{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;background:rgba(211,47,47,.14);
+  color:var(--blue);font-size:13px;line-height:1;font-weight:700;flex:0 0 auto;
+}
+.pdropdown-btn .pdd-clear:hover{background:var(--blue);color:#FFFFFF}
+.pdropdown-btn .pdd-chev{flex:0 0 auto;opacity:.65;transition:transform .15s ease}
+.pdropdown-btn.is-open .pdd-chev{transform:rotate(180deg)}
+.pdropdown-menu{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:80;
+  min-width:235px;max-width:290px;background:#FFFFFF;
+  border:1px solid #E2E8F0;border-radius:10px;
+  box-shadow:0 12px 30px rgba(15,23,42,.14);overflow:hidden;
+}
+.pdropdown-menu[hidden]{display:none}
+.pdropdown-search-wrap{
+  padding:8px;border-bottom:1px solid #F1F5F9;background:#F8FAFC;
+}
+.pdropdown-search{
+  width:100%;box-sizing:border-box;padding:6px 9px;font-size:12px;
+  border:1px solid #CBD5E1;border-radius:6px;background:#FFFFFF;
+  color:#0F172A;outline:none;
+}
+.pdropdown-search:focus{border-color:var(--blue)}
+.pdropdown-list{
+  max-height:250px;overflow-y:auto;padding:5px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.pdropdown-item{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;text-align:left;padding:7px 9px;border:none;border-radius:6px;
+  background:transparent;color:#334155;font-size:12.5px;font-weight:500;
+  cursor:pointer;transition:background .12s ease,color .12s ease;
+}
+.pdropdown-item:hover{background:#F1F5F9;color:#0F172A}
+.pdropdown-item.is-selected{
+  background:var(--blue-soft);color:var(--blue);font-weight:700;
+}
+.pdropdown-item-name{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;
+}
+.pdropdown-item-cnt{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  padding:1px 6px;border-radius:999px;background:#F1F5F9;color:#64748B;
+  flex:0 0 auto;
+}
+.pdropdown-item.is-selected .pdropdown-item-cnt{
+  background:#FECACA;color:var(--blue);
+}
+.pdropdown-empty{
+  padding:14px 10px;text-align:center;color:#94A3B8;font-size:12px;
+}
+.pfilter-reset-btn{
+  height:34px;padding:0 10px;border-radius:7px;border:1px dashed #CBD5E1;
+  background:#F8FAFC;color:#64748B;font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .15s ease;
+}
+.pfilter-reset-btn:hover{border-color:var(--blue);color:var(--blue);background:#FEF2F2}
+.pfilters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 .pfilter-btn{
+  display:inline-flex;align-items:center;gap:6px;
   font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.04em;
-  text-transform:uppercase;padding:7px 14px;border-radius:6px;
+  text-transform:uppercase;padding:7px 12px;border-radius:6px;
   border:1px solid #CBD5E1;background:#FFFFFF;color:#475569;
   cursor:pointer;transition:all .15s ease;
 }
 .pfilter-btn:hover{background:#F8FAFC;color:#0F172A}
 .pfilter-btn.is-active{
   background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
+}
+.pfilter-cnt{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;
+  padding:1px 6px;border-radius:999px;background:#F1F5F9;color:#64748B;
+}
+.pfilter-btn.is-active .pfilter-cnt{
+  background:#FECACA;color:var(--blue);
 }
 
 /* Projects Grid */
@@ -4578,7 +4666,7 @@ body.role-employee #adminCreateEmpBox,
               <div class="psection-title-wrap">
                 <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
                 <div class="psection-title-row">
-                  <h2 class="section-title">All Projects</h2>
+                  <h2 class="section-title" id="projectsSectionTitle">All Projects</h2>
                   <span class="pcount-badge" id="projectCountLabel">Loading...</span>
                 </div>
               </div>
@@ -4600,13 +4688,59 @@ body.role-employee #adminCreateEmpBox,
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..."
+                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client, BH or creator..."
                   autocomplete="off">
               </div>
+
+              <div class="pdropdown-filters">
+                <!-- Filter by BH -->
+                <div class="pdropdown-wrap" id="bhFilterWrap">
+                  <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
+                    <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
+                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
+                    <div class="pdropdown-search-wrap">
+                      <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
+                    </div>
+                    <div class="pdropdown-list" id="bhFilterList"></div>
+                  </div>
+                </div>
+
+                <!-- Filter by User (Creator) -->
+                <div class="pdropdown-wrap" id="userFilterWrap">
+                  <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="pdd-label" id="userFilterLabel">Filter by User</span>
+                    <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
+                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
+                    <div class="pdropdown-search-wrap">
+                      <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
+                    </div>
+                    <div class="pdropdown-list" id="userFilterList"></div>
+                  </div>
+                </div>
+
+                <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
+              </div>
+
               <div class="pfilters">
-                <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
-                <button class="pfilter-btn" data-filter="mine">My Projects</button>
-                <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
+                <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
+                <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
+                <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
               </div>
             </div>
 
@@ -7238,6 +7372,8 @@ body.role-employee #adminCreateEmpBox,
     users: [],
     escHtml: escHtml,
     filter: 'all',
+    bhFilter: '',
+    creatorFilter: '',
     searchQuery: '',
     dbStatus: null,
     vpsSyncStatus: 'connected',
@@ -8102,6 +8238,12 @@ body.role-employee #adminCreateEmpBox,
             }
 
             self.populateBhDropdown();
+            if (typeof self.updateFilterCountsAndMenus === 'function') {
+              self.updateFilterCountsAndMenus();
+              if (self.projects && self.projects.length) {
+                self.renderProjectsList();
+              }
+            }
           }
 
           if (cb) cb();
@@ -8110,6 +8252,9 @@ body.role-employee #adminCreateEmpBox,
           console.warn('User synchronization offline:', err.message);
           self.users = self.users || [];
           self.populateBhDropdown();
+          if (typeof self.updateFilterCountsAndMenus === 'function') {
+            self.updateFilterCountsAndMenus();
+          }
           if (cb) cb();
         });
     },
@@ -8238,9 +8383,7 @@ body.role-employee #adminCreateEmpBox,
       }
 
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
-      var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
-        '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser.id) +
+      var url = '/api/projects?userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
@@ -8367,25 +8510,426 @@ body.role-employee #adminCreateEmpBox,
       }
     },
 
+    _isProjectOwner: function (p) {
+      if (!p || !this.currentUser) return false;
+      var curId = String(this.currentUser.id || '').trim();
+      var curEmail = String(this.currentUser.email || '').trim().toLowerCase();
+      var pCreatedBy = String(p.created_by || p.createdBy || '').trim();
+      var pOwnerEmail = String(p.owner_email || p.ownerEmail || '').trim().toLowerCase();
+      if (curId && pCreatedBy && pCreatedBy === curId) return true;
+      if (curEmail && pOwnerEmail && pOwnerEmail === curEmail) return true;
+      return false;
+    },
+
+    _isProjectSharedWithMe: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      var isSharedFlag = !!(p.is_shared || p.isShared);
+      return (isSharedFlag && !isOwn) || (isOwn && hasShareNotice);
+    },
+
+    _isMyProject: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      return isOwn && !hasShareNotice;
+    },
+
+    _getProjectBh: function (p) {
+      if (!p) return '';
+      var details = (p.data && p.data.details) ? p.data.details : {};
+      return String(p.bh_name || p.bhName || details.bhName || details.designerName || '').trim();
+    },
+
+    _getProjectCreatorInfo: function (p) {
+      var isOwn = this._isProjectOwner(p);
+      var rawId = String((p && (p.created_by || p.createdBy)) || '').trim();
+      var rawEmail = String((p && (p.owner_email || p.ownerEmail)) || '').trim().toLowerCase();
+      var rawName = String((p && (p.owner_name || p.ownerName)) || '').trim();
+      var matchedUser = null;
+
+      if (this.users && this.users.length) {
+        if (rawId) {
+          matchedUser = this.users.find(function (u) { return u && String(u.id) === rawId; }) || null;
+        }
+        if (!matchedUser && rawEmail) {
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.email || '').trim().toLowerCase() === rawEmail;
+          }) || null;
+        }
+        if (!matchedUser && rawName) {
+          var lowerRaw = rawName.toLowerCase();
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.name || '').trim().toLowerCase() === lowerRaw;
+          }) || null;
+        }
+      }
+      if (!matchedUser && isOwn && this.currentUser) {
+        matchedUser = this.currentUser;
+      }
+
+      var displayName = (matchedUser && matchedUser.name) || rawName || (isOwn && this.currentUser ? this.currentUser.name : '') || rawEmail || 'Cookscape Designer';
+      var key = (matchedUser && matchedUser.id)
+        ? ('id:' + String(matchedUser.id))
+        : (rawId ? ('id:' + rawId) : (rawEmail ? ('email:' + rawEmail) : ('name:' + displayName.toLowerCase())));
+
+      return {
+        key: key,
+        name: displayName,
+        email: (matchedUser && matchedUser.email) || rawEmail || '',
+        isMe: isOwn
+      };
+    },
+
+    _matchesProjectFilters: function (p, opts) {
+      opts = opts || {};
+      var scope = opts.ignoreScope ? 'all' : (this.filter || 'all');
+      if (scope === 'mine' && !this._isMyProject(p)) return false;
+      if (scope === 'shared' && !this._isProjectSharedWithMe(p)) return false;
+
+      if (!opts.ignoreBh && this.bhFilter) {
+        var bhVal = this._getProjectBh(p);
+        if (this.bhFilter === '__unassigned__') {
+          if (bhVal) return false;
+        } else if (bhVal.toLowerCase() !== this.bhFilter.toLowerCase()) {
+          return false;
+        }
+      }
+
+      if (!opts.ignoreCreator && this.creatorFilter) {
+        var creator = this._getProjectCreatorInfo(p);
+        if (creator.key !== this.creatorFilter) return false;
+      }
+
+      var q = opts.ignoreSearch ? '' : String(this.searchQuery || '').trim().toLowerCase();
+      if (q) {
+        var details = (p.data && p.data.details) ? p.data.details : {};
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var hay = [
+          p.title,
+          p.name,
+          p.client,
+          details.clientName,
+          p.owner_name,
+          p.ownerName,
+          p.owner_email,
+          p.ownerEmail,
+          creatorInfo.name,
+          this._getProjectBh(p),
+          p.cp_code,
+          p.cpCode,
+          details.cpCode,
+          details.quoteId,
+          p.location,
+          details.location,
+          details.siteAddress,
+          p.contact_number,
+          details.contactNumber,
+          details.phone,
+          p.status
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+
+      return true;
+    },
+
+    _getFilteredProjects: function () {
+      var self = this;
+      var list = Array.isArray(this.projects) ? this.projects : [];
+      return list.filter(function (p) {
+        return self._matchesProjectFilters(p);
+      });
+    },
+
+    _closeProjectFilterMenus: function () {
+      var pairs = [
+        ['bhFilterMenu', 'bhFilterBtn'],
+        ['userFilterMenu', 'userFilterBtn']
+      ];
+      pairs.forEach(function (pair) {
+        var menu = document.getElementById(pair[0]);
+        var btn = document.getElementById(pair[1]);
+        if (menu) menu.hidden = true;
+        if (btn) {
+          btn.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    },
+
+    clearProjectFilters: function (resetScope) {
+      this.bhFilter = '';
+      this.creatorFilter = '';
+      this.searchQuery = '';
+      var searchInput = document.getElementById('projectSearchInput');
+      if (searchInput) searchInput.value = '';
+      var bhSearch = document.getElementById('bhFilterSearch');
+      if (bhSearch) bhSearch.value = '';
+      var userSearch = document.getElementById('userFilterSearch');
+      if (userSearch) userSearch.value = '';
+      if (resetScope) {
+        this.filter = 'all';
+        document.querySelectorAll('.pfilter-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-filter') === 'all');
+        });
+      }
+      this._closeProjectFilterMenus();
+      this.renderProjectsList();
+    },
+
+    _renderFilterDropdownList: function (listEl, items, selectedVal, allLabel, allCount, onSelect, filterTerm) {
+      if (!listEl) return;
+      var q = String(filterTerm || '').trim().toLowerCase();
+      var html = '';
+      if (!q) {
+        html += '<button type="button" class="pdropdown-item' + (!selectedVal ? ' is-selected' : '') + '" data-val="">' +
+          '<span class="pdropdown-item-name">' + escHtml(allLabel) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + allCount + '</span>' +
+          '</button>';
+      }
+      var shown = 0;
+      items.forEach(function (item) {
+        if (q && item.label.toLowerCase().indexOf(q) === -1) return;
+        shown++;
+        var isSel = selectedVal && String(selectedVal).toLowerCase() === String(item.value).toLowerCase();
+        html += '<button type="button" class="pdropdown-item' + (isSel ? ' is-selected' : '') + '" data-val="' + escHtml(item.value) + '">' +
+          '<span class="pdropdown-item-name">' + escHtml(item.label) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + item.count + '</span>' +
+          '</button>';
+      });
+      if (!shown && q) {
+        html = '<div class="pdropdown-empty">No matches for "' + escHtml(filterTerm) + '"</div>';
+      }
+      listEl.innerHTML = html;
+      listEl.querySelectorAll('.pdropdown-item').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          onSelect(btn.getAttribute('data-val') || '');
+        });
+      });
+    },
+
+    updateFilterCountsAndMenus: function () {
+      var self = this;
+      var allList = Array.isArray(this.projects) ? this.projects : [];
+
+      // 1. Update All / My / Shared counts (reflecting active BH, User, and Search filters)
+      var cAll = 0, cMine = 0, cShared = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreScope: true })) return;
+        cAll++;
+        if (self._isMyProject(p)) cMine++;
+        if (self._isProjectSharedWithMe(p)) cShared++;
+      });
+      var cntAllEl = document.querySelector('[data-filter-count="all"]');
+      var cntMineEl = document.querySelector('[data-filter-count="mine"]');
+      var cntSharedEl = document.querySelector('[data-filter-count="shared"]');
+      if (cntAllEl) cntAllEl.textContent = String(cAll);
+      if (cntMineEl) cntMineEl.textContent = String(cMine);
+      if (cntSharedEl) cntSharedEl.textContent = String(cShared);
+
+      // 2. Build BH options (from projects matching current scope + creator + search)
+      var bhMap = {};
+      var bhTotal = 0;
+      var unassignedCount = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreBh: true })) return;
+        bhTotal++;
+        var bh = self._getProjectBh(p);
+        if (!bh) {
+          unassignedCount++;
+          return;
+        }
+        var k = bh.toLowerCase();
+        if (!bhMap[k]) bhMap[k] = { value: bh, label: bh, count: 0 };
+        bhMap[k].count++;
+      });
+      // Ensure known Business Head users appear even if count is 0 in current scope
+      if (typeof this.getBusinessHeadUsers === 'function') {
+        this.getBusinessHeadUsers().forEach(function (bhUser) {
+          var nm = String(bhUser && bhUser.name || '').trim();
+          if (!nm) return;
+          var k = nm.toLowerCase();
+          if (!bhMap[k]) bhMap[k] = { value: nm, label: nm, count: 0 };
+        });
+      }
+      var bhItems = Object.keys(bhMap).map(function (k) { return bhMap[k]; }).sort(function (a, b) {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      if (unassignedCount > 0) {
+        bhItems.push({ value: '__unassigned__', label: 'Unassigned BH', count: unassignedCount });
+      }
+      this._bhFilterItems = bhItems;
+      this._bhFilterTotal = bhTotal;
+
+      // 3. Build Creator / User options (from projects matching current scope + BH + search)
+      var userMap = {};
+      var userTotal = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreCreator: true })) return;
+        userTotal++;
+        var info = self._getProjectCreatorInfo(p);
+        if (!userMap[info.key]) {
+          userMap[info.key] = {
+            value: info.key,
+            label: info.isMe ? (info.name + ' (You)') : info.name,
+            rawName: info.name,
+            count: 0,
+            isMe: info.isMe
+          };
+        }
+        userMap[info.key].count++;
+      });
+      var userItems = Object.keys(userMap).map(function (k) { return userMap[k]; }).sort(function (a, b) {
+        if (a.isMe && !b.isMe) return -1;
+        if (!a.isMe && b.isMe) return 1;
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      this._userFilterItems = userItems;
+      this._userFilterTotal = userTotal;
+
+      // 4. Update BH & User button labels + clear buttons
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhLbl = document.getElementById('bhFilterLabel');
+      var bhClr = document.getElementById('bhFilterClear');
+      if (bhLbl && bhBtn) {
+        if (this.bhFilter) {
+          var bhDisp = this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter;
+          bhLbl.textContent = 'BH: ' + bhDisp;
+          bhBtn.classList.add('is-filtered');
+          if (bhClr) bhClr.hidden = false;
+        } else {
+          bhLbl.textContent = 'Filter by BH';
+          bhBtn.classList.remove('is-filtered');
+          if (bhClr) bhClr.hidden = true;
+        }
+      }
+
+      var userBtn = document.getElementById('userFilterBtn');
+      var userLbl = document.getElementById('userFilterLabel');
+      var userClr = document.getElementById('userFilterClear');
+      if (userLbl && userBtn) {
+        if (this.creatorFilter) {
+          var foundUser = userItems.find(function (x) { return x.value === self.creatorFilter; });
+          if (!foundUser) {
+            for (var pi = 0; pi < allList.length; pi++) {
+              var ci = self._getProjectCreatorInfo(allList[pi]);
+              if (ci.key === self.creatorFilter) {
+                foundUser = { rawName: ci.name };
+                break;
+              }
+            }
+          }
+          var uDisp = foundUser ? foundUser.rawName : 'Selected User';
+          userLbl.textContent = 'User: ' + uDisp;
+          userBtn.classList.add('is-filtered');
+          if (userClr) userClr.hidden = false;
+        } else {
+          userLbl.textContent = 'Filter by User';
+          userBtn.classList.remove('is-filtered');
+          if (userClr) userClr.hidden = true;
+        }
+      }
+
+      var resetBtn = document.getElementById('clearProjectFiltersBtn');
+      if (resetBtn) {
+        resetBtn.hidden = !(this.bhFilter || this.creatorFilter || this.searchQuery);
+      }
+
+      // 5. Render dropdown lists
+      var bhSearchVal = (document.getElementById('bhFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('bhFilterList'),
+        bhItems,
+        this.bhFilter,
+        'All BHs',
+        bhTotal,
+        function (val) {
+          self.bhFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        bhSearchVal
+      );
+
+      var userSearchVal = (document.getElementById('userFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('userFilterList'),
+        userItems,
+        this.creatorFilter,
+        'All Users',
+        userTotal,
+        function (val) {
+          self.creatorFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        userSearchVal
+      );
+    },
+
     renderProjectsList: function () {
       var container = document.getElementById('projectsGrid');
       if (!container) return;
 
-      var countEl = document.getElementById('projectCountLabel');
-      if (countEl) {
-        countEl.textContent = this.projects.length + (this.projects.length === 1 ? ' project' : ' projects');
+      this.updateFilterCountsAndMenus();
+
+      var allTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var visibleProjects = this._getFilteredProjects();
+      var hasAnyFilter = !!(this.bhFilter || this.creatorFilter || this.searchQuery || (this.filter && this.filter !== 'all'));
+
+      var titleEl = document.getElementById('projectsSectionTitle');
+      if (titleEl) {
+        titleEl.textContent = this.filter === 'mine'
+          ? 'My Projects'
+          : (this.filter === 'shared' ? 'Shared with Me' : 'All Projects');
       }
 
-      if (!this.projects.length) {
+      var countEl = document.getElementById('projectCountLabel');
+      if (countEl) {
+        if (hasAnyFilter && allTotal > 0 && visibleProjects.length !== allTotal) {
+          countEl.textContent = visibleProjects.length + ' of ' + allTotal + ' projects';
+        } else {
+          countEl.textContent = visibleProjects.length + (visibleProjects.length === 1 ? ' project' : ' projects');
+        }
+      }
+
+      if (!visibleProjects.length) {
+        var emptyMsg = 'Create your first project or launch from a pre-set catalogue design.';
+        if (hasAnyFilter && allTotal > 0) {
+          var parts = [];
+          if (this.filter === 'mine') parts.push('My Projects');
+          if (this.filter === 'shared') parts.push('Shared with Me');
+          if (this.bhFilter) parts.push('BH: ' + (this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter));
+          if (this.creatorFilter) {
+            var uItem = (this._userFilterItems || []).find(function (u) { return u.value === OrbixProjects.creatorFilter; });
+            parts.push('User: ' + (uItem ? uItem.rawName : 'Selected'));
+          }
+          if (this.searchQuery) parts.push('"' + this.searchQuery + '"');
+          emptyMsg = 'No projects matched ' + parts.join(' • ') + '.';
+        }
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
-          '<p>' + (this.searchQuery ? 'No projects matched "' + escHtml(this.searchQuery) + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
+          '<p>' + escHtml(emptyMsg) + '</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+          (hasAnyFilter && allTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
+          '</div>' +
           '</div>';
 
+        var emptyClearBtn = document.getElementById('emptyClearFiltersBtn');
+        if (emptyClearBtn) {
+          emptyClearBtn.addEventListener('click', function () {
+            OrbixProjects.clearProjectFilters(true);
+          });
+        }
         var emptyBtn = document.getElementById('emptyCreateBtn');
         if (emptyBtn) {
           emptyBtn.addEventListener('click', function () {
@@ -8396,16 +8940,11 @@ body.role-employee #adminCreateEmpBox,
       }
 
       var html = '';
-      for (var i = 0; i < this.projects.length; i++) {
-        var p = this.projects[i];
-        var isOwner = this.currentUser && (
-          (p.created_by && p.created_by === this.currentUser.id) ||
-          (p.createdBy && p.createdBy === this.currentUser.id) ||
-          (p.owner_email && p.owner_email === this.currentUser.email) ||
-          (p.ownerEmail && p.ownerEmail === this.currentUser.email)
-        );
-
-        var ownerName = p.owner_name || p.ownerName || (isOwner ? (this.currentUser ? this.currentUser.name : 'You') : 'Cookscape Designer');
+      for (var i = 0; i < visibleProjects.length; i++) {
+        var p = visibleProjects[i];
+        var isOwner = this._isProjectOwner(p);
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var ownerName = creatorInfo.name;
         var ownerInitials = (ownerName && ownerName !== 'You')
           ? ownerName.substring(0, 2).toUpperCase()
           : (this.currentUser ? this.currentUser.name.substring(0, 2).toUpperCase() : 'DK');
@@ -9719,15 +10258,127 @@ body.role-employee #adminCreateEmpBox,
     initEventListeners: function () {
       var self = this;
 
-      // Filter Chips
+      // Filter Chips (All Projects / My Projects / Shared with Me)
       var filterButtons = document.querySelectorAll('.pfilter-btn');
       filterButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
           filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           self.filter = btn.getAttribute('data-filter') || 'all';
-          self.fetchProjects();
+          self.renderProjectsList();
         });
+      });
+
+      // Filter by BH & Filter by User Dropdowns
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhMenu = document.getElementById('bhFilterMenu');
+      var bhClear = document.getElementById('bhFilterClear');
+      var bhSearch = document.getElementById('bhFilterSearch');
+      var userBtn = document.getElementById('userFilterBtn');
+      var userMenu = document.getElementById('userFilterMenu');
+      var userClear = document.getElementById('userFilterClear');
+      var userSearch = document.getElementById('userFilterSearch');
+      var clearAllBtn = document.getElementById('clearProjectFiltersBtn');
+
+      if (bhBtn && bhMenu) {
+        bhBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = bhMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            bhMenu.hidden = false;
+            bhBtn.classList.add('is-open');
+            bhBtn.setAttribute('aria-expanded', 'true');
+            if (bhSearch) {
+              bhSearch.value = '';
+              setTimeout(function () { bhSearch.focus(); }, 20);
+            }
+          }
+        });
+        bhMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (bhClear) {
+        bhClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.bhFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (bhSearch) {
+        bhSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('bhFilterList'),
+            self._bhFilterItems || [],
+            self.bhFilter,
+            'All BHs',
+            self._bhFilterTotal || 0,
+            function (val) {
+              self.bhFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            bhSearch.value
+          );
+        });
+      }
+
+      if (userBtn && userMenu) {
+        userBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = userMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            userMenu.hidden = false;
+            userBtn.classList.add('is-open');
+            userBtn.setAttribute('aria-expanded', 'true');
+            if (userSearch) {
+              userSearch.value = '';
+              setTimeout(function () { userSearch.focus(); }, 20);
+            }
+          }
+        });
+        userMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (userClear) {
+        userClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.creatorFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (userSearch) {
+        userSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('userFilterList'),
+            self._userFilterItems || [],
+            self.creatorFilter,
+            'All Users',
+            self._userFilterTotal || 0,
+            function (val) {
+              self.creatorFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            userSearch.value
+          );
+        });
+      }
+
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function () {
+          self.clearProjectFilters(false);
+        });
+      }
+
+      document.addEventListener('click', function () {
+        self._closeProjectFilterMenus();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') self._closeProjectFilterMenus();
       });
 
       // Search input
@@ -9738,8 +10389,8 @@ body.role-employee #adminCreateEmpBox,
           clearTimeout(debounce);
           debounce = setTimeout(function () {
             self.searchQuery = searchInput.value.trim();
-            self.fetchProjects();
-          }, 200);
+            self.renderProjectsList();
+          }, 120);
         });
       }
 

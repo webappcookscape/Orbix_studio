@@ -1976,28 +1976,116 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 /* Toolbar */
 .ptoolbar{
   display:flex;justify-content:space-between;align-items:center;
-  gap:16px;flex-wrap:wrap;
+  gap:10px 14px;flex-wrap:wrap;
 }
 .psearch-box{
   display:flex;align-items:center;gap:8px;background:#F8FAFC;
   border:1px solid #CBD5E1;border-radius:8px;padding:8px 12px;
-  flex:1 1 280px;max-width:440px;
+  flex:1 1 240px;max-width:340px;min-width:210px;
 }
 .psearch-box svg{color:#64748B;flex:0 0 auto}
 .psearch-box input{
   border:none;background:transparent;outline:none;font-size:13px;
   color:#1E293B;width:100%;
 }
-.pfilters{display:flex;gap:6px;flex-wrap:wrap}
+.pdropdown-filters{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.pdropdown-wrap{
+  position:relative;
+}
+.pdropdown-btn{
+  display:inline-flex;align-items:center;gap:7px;height:34px;
+  font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.03em;
+  padding:0 11px;border-radius:7px;border:1px solid #CBD5E1;
+  background:#FFFFFF;color:#334155;cursor:pointer;transition:all .15s ease;
+  max-width:220px;white-space:nowrap;
+}
+.pdropdown-btn:hover{background:#F8FAFC;border-color:#94A3B8;color:#0F172A}
+.pdropdown-btn.is-open{border-color:var(--blue);box-shadow:0 0 0 2px rgba(211,47,47,.12)}
+.pdropdown-btn.is-filtered{
+  background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
+}
+.pdropdown-btn .pdd-ico{flex:0 0 auto;opacity:.85}
+.pdropdown-btn .pdd-label{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pdropdown-btn .pdd-clear{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;background:rgba(211,47,47,.14);
+  color:var(--blue);font-size:13px;line-height:1;font-weight:700;flex:0 0 auto;
+}
+.pdropdown-btn .pdd-clear:hover{background:var(--blue);color:#FFFFFF}
+.pdropdown-btn .pdd-chev{flex:0 0 auto;opacity:.65;transition:transform .15s ease}
+.pdropdown-btn.is-open .pdd-chev{transform:rotate(180deg)}
+.pdropdown-menu{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:80;
+  min-width:235px;max-width:290px;background:#FFFFFF;
+  border:1px solid #E2E8F0;border-radius:10px;
+  box-shadow:0 12px 30px rgba(15,23,42,.14);overflow:hidden;
+}
+.pdropdown-menu[hidden]{display:none}
+.pdropdown-search-wrap{
+  padding:8px;border-bottom:1px solid #F1F5F9;background:#F8FAFC;
+}
+.pdropdown-search{
+  width:100%;box-sizing:border-box;padding:6px 9px;font-size:12px;
+  border:1px solid #CBD5E1;border-radius:6px;background:#FFFFFF;
+  color:#0F172A;outline:none;
+}
+.pdropdown-search:focus{border-color:var(--blue)}
+.pdropdown-list{
+  max-height:250px;overflow-y:auto;padding:5px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.pdropdown-item{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;text-align:left;padding:7px 9px;border:none;border-radius:6px;
+  background:transparent;color:#334155;font-size:12.5px;font-weight:500;
+  cursor:pointer;transition:background .12s ease,color .12s ease;
+}
+.pdropdown-item:hover{background:#F1F5F9;color:#0F172A}
+.pdropdown-item.is-selected{
+  background:var(--blue-soft);color:var(--blue);font-weight:700;
+}
+.pdropdown-item-name{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;
+}
+.pdropdown-item-cnt{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  padding:1px 6px;border-radius:999px;background:#F1F5F9;color:#64748B;
+  flex:0 0 auto;
+}
+.pdropdown-item.is-selected .pdropdown-item-cnt{
+  background:#FECACA;color:var(--blue);
+}
+.pdropdown-empty{
+  padding:14px 10px;text-align:center;color:#94A3B8;font-size:12px;
+}
+.pfilter-reset-btn{
+  height:34px;padding:0 10px;border-radius:7px;border:1px dashed #CBD5E1;
+  background:#F8FAFC;color:#64748B;font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .15s ease;
+}
+.pfilter-reset-btn:hover{border-color:var(--blue);color:var(--blue);background:#FEF2F2}
+.pfilters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 .pfilter-btn{
+  display:inline-flex;align-items:center;gap:6px;
   font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.04em;
-  text-transform:uppercase;padding:7px 14px;border-radius:6px;
+  text-transform:uppercase;padding:7px 12px;border-radius:6px;
   border:1px solid #CBD5E1;background:#FFFFFF;color:#475569;
   cursor:pointer;transition:all .15s ease;
 }
 .pfilter-btn:hover{background:#F8FAFC;color:#0F172A}
 .pfilter-btn.is-active{
   background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
+}
+.pfilter-cnt{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;
+  padding:1px 6px;border-radius:999px;background:#F1F5F9;color:#64748B;
+}
+.pfilter-btn.is-active .pfilter-cnt{
+  background:#FECACA;color:var(--blue);
 }
 
 /* Projects Grid */
@@ -4578,7 +4666,7 @@ body.role-employee #adminCreateEmpBox,
               <div class="psection-title-wrap">
                 <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
                 <div class="psection-title-row">
-                  <h2 class="section-title">All Projects</h2>
+                  <h2 class="section-title" id="projectsSectionTitle">All Projects</h2>
                   <span class="pcount-badge" id="projectCountLabel">Loading...</span>
                 </div>
               </div>
@@ -4600,13 +4688,59 @@ body.role-employee #adminCreateEmpBox,
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..."
+                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client, BH or creator..."
                   autocomplete="off">
               </div>
+
+              <div class="pdropdown-filters">
+                <!-- Filter by BH -->
+                <div class="pdropdown-wrap" id="bhFilterWrap">
+                  <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
+                    <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
+                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
+                    <div class="pdropdown-search-wrap">
+                      <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
+                    </div>
+                    <div class="pdropdown-list" id="bhFilterList"></div>
+                  </div>
+                </div>
+
+                <!-- Filter by User (Creator) -->
+                <div class="pdropdown-wrap" id="userFilterWrap">
+                  <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="pdd-label" id="userFilterLabel">Filter by User</span>
+                    <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
+                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
+                    <div class="pdropdown-search-wrap">
+                      <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
+                    </div>
+                    <div class="pdropdown-list" id="userFilterList"></div>
+                  </div>
+                </div>
+
+                <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
+              </div>
+
               <div class="pfilters">
-                <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
-                <button class="pfilter-btn" data-filter="mine">My Projects</button>
-                <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
+                <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
+                <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
+                <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
               </div>
             </div>
 
@@ -6722,14 +6856,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=51'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=51'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=51'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=55'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=55'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=55'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=51');
+          return loadScript('orbix-a4-drawings.js?v=55');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -7238,6 +7372,8 @@ body.role-employee #adminCreateEmpBox,
     users: [],
     escHtml: escHtml,
     filter: 'all',
+    bhFilter: '',
+    creatorFilter: '',
     searchQuery: '',
     dbStatus: null,
     vpsSyncStatus: 'connected',
@@ -8102,6 +8238,12 @@ body.role-employee #adminCreateEmpBox,
             }
 
             self.populateBhDropdown();
+            if (typeof self.updateFilterCountsAndMenus === 'function') {
+              self.updateFilterCountsAndMenus();
+              if (self.projects && self.projects.length) {
+                self.renderProjectsList();
+              }
+            }
           }
 
           if (cb) cb();
@@ -8110,6 +8252,9 @@ body.role-employee #adminCreateEmpBox,
           console.warn('User synchronization offline:', err.message);
           self.users = self.users || [];
           self.populateBhDropdown();
+          if (typeof self.updateFilterCountsAndMenus === 'function') {
+            self.updateFilterCountsAndMenus();
+          }
           if (cb) cb();
         });
     },
@@ -8238,9 +8383,7 @@ body.role-employee #adminCreateEmpBox,
       }
 
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
-      var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
-        '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser.id) +
+      var url = '/api/projects?userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
@@ -8367,25 +8510,426 @@ body.role-employee #adminCreateEmpBox,
       }
     },
 
+    _isProjectOwner: function (p) {
+      if (!p || !this.currentUser) return false;
+      var curId = String(this.currentUser.id || '').trim();
+      var curEmail = String(this.currentUser.email || '').trim().toLowerCase();
+      var pCreatedBy = String(p.created_by || p.createdBy || '').trim();
+      var pOwnerEmail = String(p.owner_email || p.ownerEmail || '').trim().toLowerCase();
+      if (curId && pCreatedBy && pCreatedBy === curId) return true;
+      if (curEmail && pOwnerEmail && pOwnerEmail === curEmail) return true;
+      return false;
+    },
+
+    _isProjectSharedWithMe: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      var isSharedFlag = !!(p.is_shared || p.isShared);
+      return (isSharedFlag && !isOwn) || (isOwn && hasShareNotice);
+    },
+
+    _isMyProject: function (p) {
+      if (!p) return false;
+      var isOwn = this._isProjectOwner(p);
+      var hasShareNotice = !!(p.shareNotice || (p.data && p.data.shareNotice));
+      return isOwn && !hasShareNotice;
+    },
+
+    _getProjectBh: function (p) {
+      if (!p) return '';
+      var details = (p.data && p.data.details) ? p.data.details : {};
+      return String(p.bh_name || p.bhName || details.bhName || details.designerName || '').trim();
+    },
+
+    _getProjectCreatorInfo: function (p) {
+      var isOwn = this._isProjectOwner(p);
+      var rawId = String((p && (p.created_by || p.createdBy)) || '').trim();
+      var rawEmail = String((p && (p.owner_email || p.ownerEmail)) || '').trim().toLowerCase();
+      var rawName = String((p && (p.owner_name || p.ownerName)) || '').trim();
+      var matchedUser = null;
+
+      if (this.users && this.users.length) {
+        if (rawId) {
+          matchedUser = this.users.find(function (u) { return u && String(u.id) === rawId; }) || null;
+        }
+        if (!matchedUser && rawEmail) {
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.email || '').trim().toLowerCase() === rawEmail;
+          }) || null;
+        }
+        if (!matchedUser && rawName) {
+          var lowerRaw = rawName.toLowerCase();
+          matchedUser = this.users.find(function (u) {
+            return u && String(u.name || '').trim().toLowerCase() === lowerRaw;
+          }) || null;
+        }
+      }
+      if (!matchedUser && isOwn && this.currentUser) {
+        matchedUser = this.currentUser;
+      }
+
+      var displayName = (matchedUser && matchedUser.name) || rawName || (isOwn && this.currentUser ? this.currentUser.name : '') || rawEmail || 'Cookscape Designer';
+      var key = (matchedUser && matchedUser.id)
+        ? ('id:' + String(matchedUser.id))
+        : (rawId ? ('id:' + rawId) : (rawEmail ? ('email:' + rawEmail) : ('name:' + displayName.toLowerCase())));
+
+      return {
+        key: key,
+        name: displayName,
+        email: (matchedUser && matchedUser.email) || rawEmail || '',
+        isMe: isOwn
+      };
+    },
+
+    _matchesProjectFilters: function (p, opts) {
+      opts = opts || {};
+      var scope = opts.ignoreScope ? 'all' : (this.filter || 'all');
+      if (scope === 'mine' && !this._isMyProject(p)) return false;
+      if (scope === 'shared' && !this._isProjectSharedWithMe(p)) return false;
+
+      if (!opts.ignoreBh && this.bhFilter) {
+        var bhVal = this._getProjectBh(p);
+        if (this.bhFilter === '__unassigned__') {
+          if (bhVal) return false;
+        } else if (bhVal.toLowerCase() !== this.bhFilter.toLowerCase()) {
+          return false;
+        }
+      }
+
+      if (!opts.ignoreCreator && this.creatorFilter) {
+        var creator = this._getProjectCreatorInfo(p);
+        if (creator.key !== this.creatorFilter) return false;
+      }
+
+      var q = opts.ignoreSearch ? '' : String(this.searchQuery || '').trim().toLowerCase();
+      if (q) {
+        var details = (p.data && p.data.details) ? p.data.details : {};
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var hay = [
+          p.title,
+          p.name,
+          p.client,
+          details.clientName,
+          p.owner_name,
+          p.ownerName,
+          p.owner_email,
+          p.ownerEmail,
+          creatorInfo.name,
+          this._getProjectBh(p),
+          p.cp_code,
+          p.cpCode,
+          details.cpCode,
+          details.quoteId,
+          p.location,
+          details.location,
+          details.siteAddress,
+          p.contact_number,
+          details.contactNumber,
+          details.phone,
+          p.status
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+
+      return true;
+    },
+
+    _getFilteredProjects: function () {
+      var self = this;
+      var list = Array.isArray(this.projects) ? this.projects : [];
+      return list.filter(function (p) {
+        return self._matchesProjectFilters(p);
+      });
+    },
+
+    _closeProjectFilterMenus: function () {
+      var pairs = [
+        ['bhFilterMenu', 'bhFilterBtn'],
+        ['userFilterMenu', 'userFilterBtn']
+      ];
+      pairs.forEach(function (pair) {
+        var menu = document.getElementById(pair[0]);
+        var btn = document.getElementById(pair[1]);
+        if (menu) menu.hidden = true;
+        if (btn) {
+          btn.classList.remove('is-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    },
+
+    clearProjectFilters: function (resetScope) {
+      this.bhFilter = '';
+      this.creatorFilter = '';
+      this.searchQuery = '';
+      var searchInput = document.getElementById('projectSearchInput');
+      if (searchInput) searchInput.value = '';
+      var bhSearch = document.getElementById('bhFilterSearch');
+      if (bhSearch) bhSearch.value = '';
+      var userSearch = document.getElementById('userFilterSearch');
+      if (userSearch) userSearch.value = '';
+      if (resetScope) {
+        this.filter = 'all';
+        document.querySelectorAll('.pfilter-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-filter') === 'all');
+        });
+      }
+      this._closeProjectFilterMenus();
+      this.renderProjectsList();
+    },
+
+    _renderFilterDropdownList: function (listEl, items, selectedVal, allLabel, allCount, onSelect, filterTerm) {
+      if (!listEl) return;
+      var q = String(filterTerm || '').trim().toLowerCase();
+      var html = '';
+      if (!q) {
+        html += '<button type="button" class="pdropdown-item' + (!selectedVal ? ' is-selected' : '') + '" data-val="">' +
+          '<span class="pdropdown-item-name">' + escHtml(allLabel) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + allCount + '</span>' +
+          '</button>';
+      }
+      var shown = 0;
+      items.forEach(function (item) {
+        if (q && item.label.toLowerCase().indexOf(q) === -1) return;
+        shown++;
+        var isSel = selectedVal && String(selectedVal).toLowerCase() === String(item.value).toLowerCase();
+        html += '<button type="button" class="pdropdown-item' + (isSel ? ' is-selected' : '') + '" data-val="' + escHtml(item.value) + '">' +
+          '<span class="pdropdown-item-name">' + escHtml(item.label) + '</span>' +
+          '<span class="pdropdown-item-cnt">' + item.count + '</span>' +
+          '</button>';
+      });
+      if (!shown && q) {
+        html = '<div class="pdropdown-empty">No matches for "' + escHtml(filterTerm) + '"</div>';
+      }
+      listEl.innerHTML = html;
+      listEl.querySelectorAll('.pdropdown-item').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          onSelect(btn.getAttribute('data-val') || '');
+        });
+      });
+    },
+
+    updateFilterCountsAndMenus: function () {
+      var self = this;
+      var allList = Array.isArray(this.projects) ? this.projects : [];
+
+      // 1. Update All / My / Shared counts (reflecting active BH, User, and Search filters)
+      var cAll = 0, cMine = 0, cShared = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreScope: true })) return;
+        cAll++;
+        if (self._isMyProject(p)) cMine++;
+        if (self._isProjectSharedWithMe(p)) cShared++;
+      });
+      var cntAllEl = document.querySelector('[data-filter-count="all"]');
+      var cntMineEl = document.querySelector('[data-filter-count="mine"]');
+      var cntSharedEl = document.querySelector('[data-filter-count="shared"]');
+      if (cntAllEl) cntAllEl.textContent = String(cAll);
+      if (cntMineEl) cntMineEl.textContent = String(cMine);
+      if (cntSharedEl) cntSharedEl.textContent = String(cShared);
+
+      // 2. Build BH options (from projects matching current scope + creator + search)
+      var bhMap = {};
+      var bhTotal = 0;
+      var unassignedCount = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreBh: true })) return;
+        bhTotal++;
+        var bh = self._getProjectBh(p);
+        if (!bh) {
+          unassignedCount++;
+          return;
+        }
+        var k = bh.toLowerCase();
+        if (!bhMap[k]) bhMap[k] = { value: bh, label: bh, count: 0 };
+        bhMap[k].count++;
+      });
+      // Ensure known Business Head users appear even if count is 0 in current scope
+      if (typeof this.getBusinessHeadUsers === 'function') {
+        this.getBusinessHeadUsers().forEach(function (bhUser) {
+          var nm = String(bhUser && bhUser.name || '').trim();
+          if (!nm) return;
+          var k = nm.toLowerCase();
+          if (!bhMap[k]) bhMap[k] = { value: nm, label: nm, count: 0 };
+        });
+      }
+      var bhItems = Object.keys(bhMap).map(function (k) { return bhMap[k]; }).sort(function (a, b) {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      if (unassignedCount > 0) {
+        bhItems.push({ value: '__unassigned__', label: 'Unassigned BH', count: unassignedCount });
+      }
+      this._bhFilterItems = bhItems;
+      this._bhFilterTotal = bhTotal;
+
+      // 3. Build Creator / User options (from projects matching current scope + BH + search)
+      var userMap = {};
+      var userTotal = 0;
+      allList.forEach(function (p) {
+        if (!self._matchesProjectFilters(p, { ignoreCreator: true })) return;
+        userTotal++;
+        var info = self._getProjectCreatorInfo(p);
+        if (!userMap[info.key]) {
+          userMap[info.key] = {
+            value: info.key,
+            label: info.isMe ? (info.name + ' (You)') : info.name,
+            rawName: info.name,
+            count: 0,
+            isMe: info.isMe
+          };
+        }
+        userMap[info.key].count++;
+      });
+      var userItems = Object.keys(userMap).map(function (k) { return userMap[k]; }).sort(function (a, b) {
+        if (a.isMe && !b.isMe) return -1;
+        if (!a.isMe && b.isMe) return 1;
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      });
+      this._userFilterItems = userItems;
+      this._userFilterTotal = userTotal;
+
+      // 4. Update BH & User button labels + clear buttons
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhLbl = document.getElementById('bhFilterLabel');
+      var bhClr = document.getElementById('bhFilterClear');
+      if (bhLbl && bhBtn) {
+        if (this.bhFilter) {
+          var bhDisp = this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter;
+          bhLbl.textContent = 'BH: ' + bhDisp;
+          bhBtn.classList.add('is-filtered');
+          if (bhClr) bhClr.hidden = false;
+        } else {
+          bhLbl.textContent = 'Filter by BH';
+          bhBtn.classList.remove('is-filtered');
+          if (bhClr) bhClr.hidden = true;
+        }
+      }
+
+      var userBtn = document.getElementById('userFilterBtn');
+      var userLbl = document.getElementById('userFilterLabel');
+      var userClr = document.getElementById('userFilterClear');
+      if (userLbl && userBtn) {
+        if (this.creatorFilter) {
+          var foundUser = userItems.find(function (x) { return x.value === self.creatorFilter; });
+          if (!foundUser) {
+            for (var pi = 0; pi < allList.length; pi++) {
+              var ci = self._getProjectCreatorInfo(allList[pi]);
+              if (ci.key === self.creatorFilter) {
+                foundUser = { rawName: ci.name };
+                break;
+              }
+            }
+          }
+          var uDisp = foundUser ? foundUser.rawName : 'Selected User';
+          userLbl.textContent = 'User: ' + uDisp;
+          userBtn.classList.add('is-filtered');
+          if (userClr) userClr.hidden = false;
+        } else {
+          userLbl.textContent = 'Filter by User';
+          userBtn.classList.remove('is-filtered');
+          if (userClr) userClr.hidden = true;
+        }
+      }
+
+      var resetBtn = document.getElementById('clearProjectFiltersBtn');
+      if (resetBtn) {
+        resetBtn.hidden = !(this.bhFilter || this.creatorFilter || this.searchQuery);
+      }
+
+      // 5. Render dropdown lists
+      var bhSearchVal = (document.getElementById('bhFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('bhFilterList'),
+        bhItems,
+        this.bhFilter,
+        'All BHs',
+        bhTotal,
+        function (val) {
+          self.bhFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        bhSearchVal
+      );
+
+      var userSearchVal = (document.getElementById('userFilterSearch') || {}).value || '';
+      this._renderFilterDropdownList(
+        document.getElementById('userFilterList'),
+        userItems,
+        this.creatorFilter,
+        'All Users',
+        userTotal,
+        function (val) {
+          self.creatorFilter = val;
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        },
+        userSearchVal
+      );
+    },
+
     renderProjectsList: function () {
       var container = document.getElementById('projectsGrid');
       if (!container) return;
 
-      var countEl = document.getElementById('projectCountLabel');
-      if (countEl) {
-        countEl.textContent = this.projects.length + (this.projects.length === 1 ? ' project' : ' projects');
+      this.updateFilterCountsAndMenus();
+
+      var allTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var visibleProjects = this._getFilteredProjects();
+      var hasAnyFilter = !!(this.bhFilter || this.creatorFilter || this.searchQuery || (this.filter && this.filter !== 'all'));
+
+      var titleEl = document.getElementById('projectsSectionTitle');
+      if (titleEl) {
+        titleEl.textContent = this.filter === 'mine'
+          ? 'My Projects'
+          : (this.filter === 'shared' ? 'Shared with Me' : 'All Projects');
       }
 
-      if (!this.projects.length) {
+      var countEl = document.getElementById('projectCountLabel');
+      if (countEl) {
+        if (hasAnyFilter && allTotal > 0 && visibleProjects.length !== allTotal) {
+          countEl.textContent = visibleProjects.length + ' of ' + allTotal + ' projects';
+        } else {
+          countEl.textContent = visibleProjects.length + (visibleProjects.length === 1 ? ' project' : ' projects');
+        }
+      }
+
+      if (!visibleProjects.length) {
+        var emptyMsg = 'Create your first project or launch from a pre-set catalogue design.';
+        if (hasAnyFilter && allTotal > 0) {
+          var parts = [];
+          if (this.filter === 'mine') parts.push('My Projects');
+          if (this.filter === 'shared') parts.push('Shared with Me');
+          if (this.bhFilter) parts.push('BH: ' + (this.bhFilter === '__unassigned__' ? 'Unassigned' : this.bhFilter));
+          if (this.creatorFilter) {
+            var uItem = (this._userFilterItems || []).find(function (u) { return u.value === OrbixProjects.creatorFilter; });
+            parts.push('User: ' + (uItem ? uItem.rawName : 'Selected'));
+          }
+          if (this.searchQuery) parts.push('"' + this.searchQuery + '"');
+          emptyMsg = 'No projects matched ' + parts.join(' • ') + '.';
+        }
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
-          '<p>' + (this.searchQuery ? 'No projects matched "' + escHtml(this.searchQuery) + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
+          '<p>' + escHtml(emptyMsg) + '</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+          (hasAnyFilter && allTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
+          '</div>' +
           '</div>';
 
+        var emptyClearBtn = document.getElementById('emptyClearFiltersBtn');
+        if (emptyClearBtn) {
+          emptyClearBtn.addEventListener('click', function () {
+            OrbixProjects.clearProjectFilters(true);
+          });
+        }
         var emptyBtn = document.getElementById('emptyCreateBtn');
         if (emptyBtn) {
           emptyBtn.addEventListener('click', function () {
@@ -8396,16 +8940,11 @@ body.role-employee #adminCreateEmpBox,
       }
 
       var html = '';
-      for (var i = 0; i < this.projects.length; i++) {
-        var p = this.projects[i];
-        var isOwner = this.currentUser && (
-          (p.created_by && p.created_by === this.currentUser.id) ||
-          (p.createdBy && p.createdBy === this.currentUser.id) ||
-          (p.owner_email && p.owner_email === this.currentUser.email) ||
-          (p.ownerEmail && p.ownerEmail === this.currentUser.email)
-        );
-
-        var ownerName = p.owner_name || p.ownerName || (isOwner ? (this.currentUser ? this.currentUser.name : 'You') : 'Cookscape Designer');
+      for (var i = 0; i < visibleProjects.length; i++) {
+        var p = visibleProjects[i];
+        var isOwner = this._isProjectOwner(p);
+        var creatorInfo = this._getProjectCreatorInfo(p);
+        var ownerName = creatorInfo.name;
         var ownerInitials = (ownerName && ownerName !== 'You')
           ? ownerName.substring(0, 2).toUpperCase()
           : (this.currentUser ? this.currentUser.name.substring(0, 2).toUpperCase() : 'DK');
@@ -9719,15 +10258,127 @@ body.role-employee #adminCreateEmpBox,
     initEventListeners: function () {
       var self = this;
 
-      // Filter Chips
+      // Filter Chips (All Projects / My Projects / Shared with Me)
       var filterButtons = document.querySelectorAll('.pfilter-btn');
       filterButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
           filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           self.filter = btn.getAttribute('data-filter') || 'all';
-          self.fetchProjects();
+          self.renderProjectsList();
         });
+      });
+
+      // Filter by BH & Filter by User Dropdowns
+      var bhBtn = document.getElementById('bhFilterBtn');
+      var bhMenu = document.getElementById('bhFilterMenu');
+      var bhClear = document.getElementById('bhFilterClear');
+      var bhSearch = document.getElementById('bhFilterSearch');
+      var userBtn = document.getElementById('userFilterBtn');
+      var userMenu = document.getElementById('userFilterMenu');
+      var userClear = document.getElementById('userFilterClear');
+      var userSearch = document.getElementById('userFilterSearch');
+      var clearAllBtn = document.getElementById('clearProjectFiltersBtn');
+
+      if (bhBtn && bhMenu) {
+        bhBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = bhMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            bhMenu.hidden = false;
+            bhBtn.classList.add('is-open');
+            bhBtn.setAttribute('aria-expanded', 'true');
+            if (bhSearch) {
+              bhSearch.value = '';
+              setTimeout(function () { bhSearch.focus(); }, 20);
+            }
+          }
+        });
+        bhMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (bhClear) {
+        bhClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.bhFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (bhSearch) {
+        bhSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('bhFilterList'),
+            self._bhFilterItems || [],
+            self.bhFilter,
+            'All BHs',
+            self._bhFilterTotal || 0,
+            function (val) {
+              self.bhFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            bhSearch.value
+          );
+        });
+      }
+
+      if (userBtn && userMenu) {
+        userBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = userMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            self.updateFilterCountsAndMenus();
+            userMenu.hidden = false;
+            userBtn.classList.add('is-open');
+            userBtn.setAttribute('aria-expanded', 'true');
+            if (userSearch) {
+              userSearch.value = '';
+              setTimeout(function () { userSearch.focus(); }, 20);
+            }
+          }
+        });
+        userMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (userClear) {
+        userClear.addEventListener('click', function (e) {
+          e.stopPropagation();
+          self.creatorFilter = '';
+          self._closeProjectFilterMenus();
+          self.renderProjectsList();
+        });
+      }
+      if (userSearch) {
+        userSearch.addEventListener('input', function () {
+          self._renderFilterDropdownList(
+            document.getElementById('userFilterList'),
+            self._userFilterItems || [],
+            self.creatorFilter,
+            'All Users',
+            self._userFilterTotal || 0,
+            function (val) {
+              self.creatorFilter = val;
+              self._closeProjectFilterMenus();
+              self.renderProjectsList();
+            },
+            userSearch.value
+          );
+        });
+      }
+
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function () {
+          self.clearProjectFilters(false);
+        });
+      }
+
+      document.addEventListener('click', function () {
+        self._closeProjectFilterMenus();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') self._closeProjectFilterMenus();
       });
 
       // Search input
@@ -9738,8 +10389,8 @@ body.role-employee #adminCreateEmpBox,
           clearTimeout(debounce);
           debounce = setTimeout(function () {
             self.searchQuery = searchInput.value.trim();
-            self.fetchProjects();
-          }, 200);
+            self.renderProjectsList();
+          }, 120);
         });
       }
 
@@ -21296,6 +21947,24 @@ body.role-employee #adminCreateEmpBox,
     return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
   }
 
+  function getSurabhiWoodworkSubtotal(project, selectedRooms) {
+    if (!project) return 0;
+    try {
+      var baseRateCard = project.rateCard || DEFAULT_RATE_CARD;
+      var surabhiRateCard = Object.assign({}, baseRateCard, { selectedTier: 'SURABHI', roomTiers: {} });
+      var surabhiProj = {
+        plan: project.plan || project,
+        rateCard: surabhiRateCard,
+        commercialCharges: project.commercialCharges,
+        meta: project.meta
+      };
+      var q = generateFullQuotation(surabhiProj, selectedRooms || ['all']);
+      return q && q.subtotalWoodwork ? q.subtotalWoodwork : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   // Cookscape Master Add-Ons & Accessories Catalog with Multi-Brand Rates (Ebco, Hettich, Grass, Livsmart)
   var COOKSCAPE_ADDONS_CATALOG = [
     { id: 'pvc_cutlery_inlet_450', name: 'PVC CUTLERY INLET - 450', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 1385.00, ebcoRate: 1271.70, hettichRate: 1385.00 },
@@ -21643,6 +22312,7 @@ body.role-employee #adminCreateEmpBox,
     SQM_FACTOR: SQM_FACTOR,
     SURABHI_DESIGN_FEE_SLABS: SURABHI_DESIGN_FEE_SLABS,
     getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
+    getSurabhiWoodworkSubtotal: getSurabhiWoodworkSubtotal,
     COOKSCAPE_ADDONS_CATALOG: COOKSCAPE_ADDONS_CATALOG,
     getCookscapeAddonsCatalog: getCookscapeAddonsCatalog,
     COOKSCAPE_CUSTOM_ADDONS_PAIRS: COOKSCAPE_CUSTOM_ADDONS_PAIRS,
@@ -46377,35 +47047,21 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
       var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
-      // Elegant Surabhi Costing Benchmark & Slab Lookup
-      var slabId = charges.surabhiDesignSlab || 'auto';
+      // Elegant Surabhi Standard Design Fee Slab & 60% Discount (Non-editable / Untouchable)
       var surabhiWoodwork = (charges.surabhiWoodworkSubtotal !== undefined)
         ? Number(charges.surabhiWoodworkSubtotal)
         : (this.getSurabhiWoodworkSubtotal ? this.getSurabhiWoodworkSubtotal() : woodworkSubtotal);
       if (!surabhiWoodwork || isNaN(surabhiWoodwork)) surabhiWoodwork = woodworkSubtotal;
 
+      var slabId = charges.surabhiDesignSlab || 'auto';
       var activeSlab = (typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab)
         ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
         : null;
 
-      var designPercent = 9;
-      var designAmount = 0;
-      var adpPercent = 0;
-      var adpAmount = 0;
-
-      if (activeSlab && slabId !== 'custom') {
-        designAmount = activeSlab.fullDesignCharges;
-        adpPercent = activeSlab.discountPercent || 60;
-        adpAmount = Math.round(designAmount * (adpPercent / 100));
-        designPercent = (woodworkSubtotal > 0) ? (Math.round((designAmount / woodworkSubtotal) * 1000) / 10) : 9;
-      } else {
-        designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
-        if (isNaN(designPercent)) designPercent = 9;
-        designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
-
-        adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
-        adpAmount = Math.round(designAmount * (adpPercent / 100));
-      }
+      var designAmount = activeSlab ? activeSlab.fullDesignCharges : Math.round(woodworkSubtotal * 0.09);
+      var adpPercent = activeSlab ? (activeSlab.discountPercent || 60) : 60;
+      var adpAmount = Math.round(designAmount * (adpPercent / 100));
+      var designPercent = (woodworkSubtotal > 0) ? (Math.round((designAmount / woodworkSubtotal) * 1000) / 10) : 9;
 
       var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
       if (isNaN(freightPercent)) freightPercent = 2.5;
@@ -46999,40 +47655,15 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           }).join('') +
           '</td></tr>') : '') +
 
-        // Design Fee Slab Selector (Auto-applied by Elegant Surabhi costing benchmark & changeable by dropdown)
-        '<tr class="comm-charge-row" style="background:#F8FAFC;border-top:1px solid #E2E8F0;">' +
-        '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold" style="color:#1E3A8A;font-size:12px;">' +
-        '<div style="display:inline-flex;align-items:center;gap:6px;">' +
-        '<span>🏷️ Design Fee Slab <small style="color:#64748B;font-weight:normal;">(Elegant Surabhi benchmark)</small>:</span>' +
-        '</div></td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select" data-key="surabhiDesignSlab" id="commSurabhiSlabSelect" style="max-width:280px;font-size:11px;font-weight:600;padding:3px 6px;border-radius:5px;border:1px solid #94A3B8;background:#fff;color:#0F172A;">' +
-        '<option value="auto"' + (commSummary.surabhiDesignSlab === 'auto' ? ' selected' : '') + '>✨ Auto: ' + (commSummary.activeSlab ? (commSummary.activeSlab.label + ' (₹' + commSummary.activeSlab.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + commSummary.activeSlab.discountedCharges.toLocaleString('en-IN') + ')') : '2 to 3 Lakhs') + '</option>' +
-        '<option value="2_to_3"' + (commSummary.surabhiDesignSlab === '2_to_3' ? ' selected' : '') + '>2 to 3 Lakhs (₹24,465 → ₹9,786)</option>' +
-        '<option value="4_to_5"' + (commSummary.surabhiDesignSlab === '4_to_5' ? ' selected' : '') + '>4 to 5 Lakhs (₹35,280 → ₹14,112)</option>' +
-        '<option value="5_to_7_entry"' + (commSummary.surabhiDesignSlab === '5_to_7_entry' ? ' selected' : '') + '>5 to 7 Lakhs - Entry (₹42,780 → ₹17,112)</option>' +
-        '<option value="5_to_7_mid"' + (commSummary.surabhiDesignSlab === '5_to_7_mid' ? ' selected' : '') + '>5 to 7 Lakhs - Mid (₹47,780 → ₹19,112)</option>' +
-        '<option value="5_to_7_upper"' + (commSummary.surabhiDesignSlab === '5_to_7_upper' ? ' selected' : '') + '>5 to 7 Lakhs - Upper (₹60,280 → ₹24,112)</option>' +
-        '<option value="7_to_8"' + (commSummary.surabhiDesignSlab === '7_to_8' ? ' selected' : '') + '>7 to 8 Lakhs (₹72,780 → ₹29,112)</option>' +
-        '<option value="9_to_10"' + (commSummary.surabhiDesignSlab === '9_to_10' ? ' selected' : '') + '>9 to 10 Lakhs (₹85,280 → ₹34,112)</option>' +
-        '<option value="10_to_11"' + (commSummary.surabhiDesignSlab === '10_to_11' ? ' selected' : '') + '>10 to 11 Lakhs (₹97,780 → ₹39,112)</option>' +
-        '<option value="12_to_15"' + (commSummary.surabhiDesignSlab === '12_to_15' ? ' selected' : '') + '>12 to 15 Lakhs (₹1,12,780 → ₹45,112)</option>' +
-        '<option value="15_to_20"' + (commSummary.surabhiDesignSlab === '15_to_20' ? ' selected' : '') + '>15 to 20 Lakhs (₹1,47,780 → ₹59,112)</option>' +
-        '<option value="20_to_25"' + (commSummary.surabhiDesignSlab === '20_to_25' ? ' selected' : '') + '>20 to 25 Lakhs (₹1,95,280 → ₹78,112)</option>' +
-        '<option value="25_to_30"' + (commSummary.surabhiDesignSlab === '25_to_30' ? ' selected' : '') + '>25 to 30 Lakhs (₹2,22,780 → ₹89,112)</option>' +
-        '<option value="custom"' + (commSummary.surabhiDesignSlab === 'custom' ? ' selected' : '') + '>✏️ Manual / Percentage %</option>' +
-        '</select>' +
-        '</td></tr>' +
-
-        // Design Charges (editable %, 9% default)
+        // Design Charges (Standard Slab - Untouchable / Non-editable)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Design Charges</td>' +
+        '<td colspan="4" class="bold">Design Charges' +
+        (commSummary.activeSlab ? (' <small style="color:#64748B;font-weight:normal;">(' + commSummary.activeSlab.label + ')</small>') : '') +
+        '</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="designPercent" value="' + commSummary.designPercent + '" style="width:55px" placeholder="9">' +
-        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span style="font-size:12px;font-weight:700;color:#0F172A;">₹</span>' +
         '<span id="commDesignAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.designAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
@@ -47047,60 +47678,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '<span id="commFreightAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.freightAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // 7. Loading and unloading (material) [Additional / Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">Loading and unloading (material)</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.loadingUnloadingStatus === 'Included' ? ' is-included' : '') + '" data-key="loadingUnloadingStatus">' +
-        '<option value="Additional"' + (commSummary.loadingUnloadingStatus === 'Additional' ? ' selected' : '') + '>Additional</option>' +
-        '<option value="Included"' + (commSummary.loadingUnloadingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
-        '</select></td></tr>' +
-
-        // 8. Floor protective mat [Included / Not Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">Floor protective mat</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.floorMatStatus === 'Included' ? ' is-included' : '') + '" data-key="floorMatStatus">' +
-        '<option value="Not Included in Quote"' + (commSummary.floorMatStatus !== 'Included' ? ' selected' : '') + '>Not Included in Quote</option>' +
-        '<option value="Included"' + (commSummary.floorMatStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
-        '</select></td></tr>' +
-
-        // 9. Civil works [As per actuals / Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">Civil works</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.civilWorksStatus === 'Included' ? ' is-included' : '') + '" data-key="civilWorksStatus">' +
-        '<option value="As per actuals"' + (commSummary.civilWorksStatus !== 'Included' ? ' selected' : '') + '>As per actuals</option>' +
-        '<option value="Included"' + (commSummary.civilWorksStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
-        '</select></td></tr>' +
-
-        // 10. Electrical & Plumbing Works [Additional / Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">Electrical &amp; Plumbing Works</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.electricalPlumbingStatus === 'Included' ? ' is-included' : '') + '" data-key="electricalPlumbingStatus">' +
-        '<option value="Additional"' + (commSummary.electricalPlumbingStatus !== 'Included' ? ' selected' : '') + '>Additional</option>' +
-        '<option value="Included"' + (commSummary.electricalPlumbingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
-        '</select></td></tr>' +
-
-        // 11. False ceiling [Not Included / Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">False ceiling</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.falseCeilingStatus === 'Included' ? ' is-included' : '') + '" data-key="falseCeilingStatus">' +
-        '<option value="Not Included"' + (commSummary.falseCeilingStatus !== 'Included' ? ' selected' : '') + '>Not Included</option>' +
-        '<option value="Included"' + (commSummary.falseCeilingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
-        '</select></td></tr>' +
-
-        // 12. Wallpaper [Complementary / Not Included]
-        '<tr class="comm-charge-row">' +
-        '<td colspan="4"></td><td colspan="4" class="bold">Wallpaper</td>' +
-        '<td colspan="3" style="text-align:right">' +
-        '<select class="comm-status-select' + (commSummary.wallpaperStatus === 'Complementary' ? ' is-complementary' : '') + '" data-key="wallpaperStatus">' +
-        '<option value="Complementary"' + (commSummary.wallpaperStatus !== 'Not Included' ? ' selected' : '') + '>Complementary</option>' +
-        '<option value="Not Included"' + (commSummary.wallpaperStatus === 'Not Included' ? ' selected' : '') + '>Not Included</option>' +
-        '</select></td></tr>' +
-
         // Discount on Wood Work (replaces Promotional Discount)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
@@ -47113,15 +47690,13 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '<span id="commDiscountAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.discountAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // Discount on Design Charge (replaces ADP)
+        // Discount on Design Charge (Fixed 60% Standard - Untouchable / Non-editable)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold text-red">Discount on Design Charge</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
-        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="adpPercent" value="' + (commSummary.adpPercent || '') + '" style="width:55px" placeholder="enter %">' +
-        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span style="font-size:12px;font-weight:700;color:#DC2626;">60% &nbsp;=&nbsp; (-) ₹</span>' +
         '<span id="commAdpAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.adpAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
@@ -47196,12 +47771,8 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
         var designAmtEl = document.getElementById('commDesignAmount');
         if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
-        var designInp = boqEl.querySelector('.comm-input[data-key="designPercent"]');
-        if (designInp && summary.surabhiDesignSlab !== 'custom') {
-          designInp.value = summary.designPercent;
-        }
         var adpInp = boqEl.querySelector('.comm-input[data-key="adpPercent"]');
-        if (adpInp && summary.surabhiDesignSlab !== 'custom') {
+        if (adpInp) {
           adpInp.value = summary.adpPercent;
         }
         var freightAmtEl = document.getElementById('commFreightAmount');
@@ -47236,14 +47807,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         }
         var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
         if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
-
-        var autoOpt = boqEl.querySelector('#commSurabhiSlabSelect option[value="auto"]');
-        if (autoOpt && typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab) {
-          var autoS = Core.getSurabhiDesignFeeSlab(summary.surabhiWoodworkSubtotal, 'auto');
-          if (autoS) {
-            autoOpt.textContent = '✨ Auto: ' + autoS.label + ' (₹' + autoS.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + autoS.discountedCharges.toLocaleString('en-IN') + ')';
-          }
-        }
       }
 
       // Commercial Charges live input bindings
@@ -47257,11 +47820,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
 
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = val;
-          if (key === 'designPercent' || key === 'adpPercent') {
-            self.project.commercialCharges.surabhiDesignSlab = 'custom';
-            var slabSel = boqEl.querySelector('#commSurabhiSlabSelect');
-            if (slabSel) slabSel.value = 'custom';
-          }
           refreshCommercialDom();
           self.saveToLocalStorage();
         });
@@ -47313,9 +47871,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       if (btnAddonsPicker) {
         btnAddonsPicker.addEventListener('click', function () {
           self.openAddonsPickerModal(function () {
-            refreshCommercialDom();
-            var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
-            if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.renderCommercialChargesSummary(boqEl);
             self.saveToLocalStorage();
           });
         });
@@ -47325,9 +47881,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       if (btnCustomAddons) {
         btnCustomAddons.addEventListener('click', function () {
           self.openCustomAddonsConfiguratorModal(function () {
-            refreshCommercialDom();
-            var appInp = boqEl.querySelector('.comm-input[data-key="appliances"]');
-            if (appInp) appInp.value = self.project.commercialCharges.appliances || 0;
+            self.renderCommercialChargesSummary(boqEl);
             self.saveToLocalStorage();
           });
         });
@@ -49842,6 +50396,47 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     { key: 'MR+', label: '4X TUFF GLOSS', slideRange: 'Slides 31–33' }
   ];
 
+  function getVariantLabel(key) {
+    if (!key) return 'CAPRICOAST MATTE';
+    var norm = (Core && Core.normalizeTierName) ? Core.normalizeTierName(key) : key;
+    var found = MASTER_VARIANTS.filter(function (v) { return v.key === norm || v.key === key; })[0];
+    if (found) return found.label;
+    if (norm === 'custom' || key === 'custom') return 'CUSTOM (ROOM-WISE)';
+    return String(key).toUpperCase();
+  }
+
+  function getProjectRooms(proj) {
+    var rooms = [];
+    var seen = {};
+
+    var planRooms = (proj && proj.plan && Array.isArray(proj.plan.rooms)) ? proj.plan.rooms : [];
+    planRooms.forEach(function (rm) {
+      if (!rm || !rm.id || seen[rm.id]) return;
+      seen[rm.id] = true;
+      rooms.push({
+        id: rm.id,
+        name: rm.name || ('Room ' + (rooms.length + 1)),
+        unitCount: 0
+      });
+    });
+
+    var furniture = (proj && proj.plan && Array.isArray(proj.plan.furniture)) ? proj.plan.furniture : [];
+    furniture.forEach(function (f) {
+      if (!f || f.isDecor) return;
+      var rId = f.roomId || '_general';
+      var rName = f.roomName || 'General';
+      if (!seen[rId]) {
+        seen[rId] = true;
+        rooms.push({ id: rId, name: rName, unitCount: 1 });
+      } else {
+        var existing = rooms.filter(function (r) { return r.id === rId; })[0];
+        if (existing) existing.unitCount = (existing.unitCount || 0) + 1;
+      }
+    });
+
+    return rooms;
+  }
+
   function esc(str) {
     return String(str === undefined || str === null ? '' : str)
       .replace(/&/g, '&amp;')
@@ -49964,14 +50559,20 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   function buildVariantQuotePayload(app, tierKey, iconLookup, unitRemarks) {
     var proj = app.project || {};
     var origRateCard = proj.rateCard || {};
-    var normalized = (Core && Core.normalizeTierName) ? Core.normalizeTierName(tierKey) : tierKey;
+    var isCustom = (tierKey === 'custom' || tierKey === 'custom variant' || tierKey === 'custom (room-wise)');
+    var normalized = isCustom ? 'custom' : ((Core && Core.normalizeTierName) ? Core.normalizeTierName(tierKey) : tierKey);
 
     var clonedRateCard = JSON.parse(JSON.stringify(origRateCard));
-    clonedRateCard.selectedTier = normalized;
-    if (clonedRateCard.roomTiers && typeof clonedRateCard.roomTiers === 'object') {
-      Object.keys(clonedRateCard.roomTiers).forEach(function (rk) {
-        clonedRateCard.roomTiers[rk] = normalized;
-      });
+    if (isCustom) {
+      clonedRateCard.selectedTier = 'custom';
+      clonedRateCard.roomTiers = Object.assign({}, origRateCard.roomTiers || {});
+    } else {
+      clonedRateCard.selectedTier = normalized;
+      if (clonedRateCard.roomTiers && typeof clonedRateCard.roomTiers === 'object') {
+        Object.keys(clonedRateCard.roomTiers).forEach(function (rk) {
+          clonedRateCard.roomTiers[rk] = normalized;
+        });
+      }
     }
 
     var clonedProj = {
@@ -49982,11 +50583,18 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     };
 
     var quote = Core.generateFullQuotation(clonedProj, app.selectedBOQRooms || ['all']);
-    var commCharges = app.getCommercialCharges();
+    var surabhiWoodwork = (Core && Core.getSurabhiWoodworkSubtotal)
+      ? Core.getSurabhiWoodworkSubtotal(proj, app.selectedBOQRooms || ['all'])
+      : (app.getSurabhiWoodworkSubtotal ? app.getSurabhiWoodworkSubtotal() : 0);
+    if (!surabhiWoodwork) surabhiWoodwork = quote.subtotalWoodwork;
+
+    var commCharges = Object.assign({}, app.getCommercialCharges() || {}, {
+      surabhiWoodworkSubtotal: surabhiWoodwork
+    });
     var comm = app.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
 
     var varMeta = MASTER_VARIANTS.filter(function (v) { return v.key === normalized; })[0];
-    var tierTitle = (varMeta && varMeta.label) || normalized.toUpperCase();
+    var tierTitle = isCustom ? 'CUSTOM VARIANT (Room-Wise)' : ((varMeta && varMeta.label) || normalized.toUpperCase());
 
     var items = (quote.furnitureItems || []).map(function (it, idx) {
       var d = it.dimensions || { W: 0, D: 0, H: 0 };
@@ -50042,8 +50650,12 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     var roomsSummary = (quote.allRoomsSummary || [])
       .filter(function (r) { return Number(r && r.itemCount || 0) > 0; })
       .map(function (r, idx) {
+        var rawTier = (clonedRateCard.roomTiers && (clonedRateCard.roomTiers[r.id] || clonedRateCard.roomTiers[r.name])) || r.variant || clonedRateCard.selectedTier || 'CC MATTE';
         return {
+          id: r.id,
           name: r.name,
+          variant: rawTier,
+          variantLabel: getVariantLabel(rawTier),
           itemCount: Number(r.itemCount || 0),
           roomSubtotal: Math.round(r.roomSubtotal || 0),
           percentShare: r.percentShare || 0,
@@ -50068,12 +50680,18 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     return {
       tierKey: normalized,
       tierTitle: tierTitle,
+      isCustomVariant: isCustom,
+      roomTiers: clonedRateCard.roomTiers || {},
       roomScopeLabel: roomScopeLabel,
       currencySymbol: quote.currencySymbol || '₹',
       grandTotal: Math.round(comm.grandTotal || 0),
       roomsSummary: roomsSummary,
+      roomBreakdown: roomsSummary,
       commercial: {
         woodworkSubtotal: comm.woodworkSubtotal,
+        surabhiWoodworkSubtotal: comm.surabhiWoodworkSubtotal || surabhiWoodwork,
+        surabhiDesignSlab: comm.surabhiDesignSlab || 'auto',
+        activeSlab: comm.activeSlab,
         accessoriesEnabled: comm.accessoriesEnabled !== false,
         additionalAccessories: comm.additionalAccessories,
         appliancesEnabled: comm.appliancesEnabled !== false,
@@ -50252,7 +50870,37 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '  </div>' +
 
         '  <div style="margin-bottom:12px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) for Quotation</div>' +
+        '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
+        '      <div style="font-size:12px;font-weight:700;color:#0F172A;">Select Master Template Variant(s) for Quotation</div>' +
+        '      <button type="button" id="cqOpenCustomVariantBtn" class="btn small" style="background:#0F766E;color:#fff;border-color:#0D9488;font-weight:700;padding:5px 12px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">' +
+        '        <span>🎨 Custom Variant</span>' +
+        '      </button>' +
+        '    </div>' +
+        '    <div id="cqCustomVariantCardWrap" style="margin-bottom:8px;"></div>' +
+        '    <div id="cqRoomWiseSelectorDrawer" style="display:none;background:#F8FAFC;border:1.5px solid #0D9488;border-radius:8px;padding:12px 14px;margin-bottom:12px;box-shadow:0 3px 10px rgba(13,148,136,0.12);">' +
+        '      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">' +
+        '        <div>' +
+        '          <div style="font-size:12.5px;font-weight:700;color:#0F766E;">🎨 Room-Wise Custom Variant Configuration</div>' +
+        '          <div style="font-size:11px;color:#64748B;">Assign specific finishes to individual rooms (e.g. 4X Tuff Gloss for Kitchen, Capricoast Matte for Bed)</div>' +
+        '        </div>' +
+        '        <div style="display:flex;align-items:center;gap:6px;">' +
+        '          <label style="font-size:11px;color:#475569;font-weight:600;">Bulk Set:</label>' +
+        '          <select id="cqBulkRoomTierSelect" style="font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid #CBD5E1;background:#fff;">' +
+        '            <option value="">-- Apply to all rooms --</option>' +
+        MASTER_VARIANTS.map(function (v) { return '<option value="' + esc(v.key) + '">' + esc(v.label) + '</option>'; }).join('') +
+        '          </select>' +
+        '        </div>' +
+        '      </div>' +
+        '      <div id="cqRoomRowsList" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:220px;overflow-y:auto;padding-right:4px;margin-bottom:10px;"></div>' +
+        '      <div style="display:flex;justify-content:space-between;align-items:center;background:#F0FDFA;border:1px solid #CCFBF1;border-radius:6px;padding:8px 12px;margin-bottom:10px;">' +
+        '        <span style="font-size:11.5px;font-weight:600;color:#0F766E;">Estimated Custom Woodwork Total:</span>' +
+        '        <span id="cqCustomLiveTotal" style="font-family:monospace;font-size:13px;font-weight:800;color:#0F766E;">₹ 0</span>' +
+        '      </div>' +
+        '      <div style="display:flex;gap:8px;justify-content:flex-end;">' +
+        '        <button type="button" id="cqCancelCustomBtn" class="btn small" style="padding:5px 12px;font-size:11.5px;">Cancel</button>' +
+        '        <button type="button" id="cqApplyCustomBtn" class="btn small" style="background:#0F766E;color:#fff;border-color:#0D9488;font-weight:700;padding:5px 16px;font-size:11.5px;">✅ Apply &amp; Select Custom Variant</button>' +
+        '      </div>' +
+        '    </div>' +
         variantCheckboxesHtml +
         '  </div>' +
 
@@ -50279,6 +50927,164 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '</div>';
 
       modal.classList.add('is-open');
+
+      var customCardWrap = body.querySelector('#cqCustomVariantCardWrap');
+      var roomDrawer = body.querySelector('#cqRoomWiseSelectorDrawer');
+      var projectRooms = getProjectRooms(proj);
+
+      function renderCustomCard(quote) {
+        if (!quote) {
+          if (customCardWrap) customCardWrap.innerHTML = '';
+          return;
+        }
+        var rmCount = Object.keys(quote.roomTiers || {}).length;
+        customCardWrap.innerHTML =
+          '<label style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1.5px solid #0D9488;border-radius:8px;cursor:pointer;background:#F0FDFA;box-shadow:0 1px 3px rgba(13,148,136,0.12);">' +
+          '  <span style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#0F766E;">' +
+          '    <input type="checkbox" class="cq-tier-chk" value="custom" checked> ' +
+          '    <span>' +
+          '      🎨 CUSTOM VARIANT (Room-Wise)' +
+          '      <span style="display:block;font-weight:500;color:#0D9488;font-size:10.5px;">' +
+          '        ' + (quote.items ? quote.items.length : 0) + ' units + quote · ' + rmCount + ' rooms configured' +
+          '      </span>' +
+          '    </span>' +
+          '  </span>' +
+          '  <span style="display:flex;align-items:center;gap:10px;">' +
+          '    <button type="button" class="btn small" id="cqEditRoomsBtn" style="font-size:11px;padding:3px 8px;background:#CCFBF1;color:#0F766E;border-color:#5EEAD4;font-weight:600;">✏️ Edit Rooms</button>' +
+          '    <span style="font-family:monospace;font-size:12.5px;font-weight:800;color:#0F766E;white-space:nowrap;">' +
+          '      ' + esc(fmtINR(quote.grandTotal)) +
+          '    </span>' +
+          '  </span>' +
+          '</label>';
+
+        var editBtn = customCardWrap.querySelector('#cqEditRoomsBtn');
+        if (editBtn) {
+          editBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleRoomDrawer(true);
+          });
+        }
+      }
+
+      function populateRoomDrawer() {
+        var currentTiers = (proj.rateCard && proj.rateCard.roomTiers) ? proj.rateCard.roomTiers : {};
+        var listEl = roomDrawer.querySelector('#cqRoomRowsList');
+        if (!listEl) return;
+
+        var html = '';
+        projectRooms.forEach(function (rm) {
+          var selTier = currentTiers[rm.id] || currentTiers[rm.name] || proj.rateCard.selectedTier || 'CC MATTE';
+          html += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+            '  <div>' +
+            '    <div style="font-size:12px;font-weight:700;color:#0F172A;">' + esc(rm.name) + '</div>' +
+            '    <div style="font-size:10.5px;color:#64748B;">' + (rm.unitCount || 0) + ' units</div>' +
+            '  </div>' +
+            '  <select class="cq-room-tier-select" data-room-id="' + esc(rm.id) + '" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid #CBD5E1;background:#fff;color:#0F172A;font-weight:600;max-width:160px;">' +
+            MASTER_VARIANTS.map(function (v) {
+              return '<option value="' + esc(v.key) + '"' + (v.key === selTier ? ' selected' : '') + '>' + esc(v.label) + '</option>';
+            }).join('') +
+            '  </select>' +
+            '</div>';
+        });
+
+        listEl.innerHTML = html;
+        updateDrawerLiveTotal();
+      }
+
+      function updateDrawerLiveTotal() {
+        var tempRoomTiers = {};
+        roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (sel) {
+          var rId = sel.getAttribute('data-room-id');
+          if (rId) tempRoomTiers[rId] = sel.value;
+        });
+
+        var tempRateCard = Object.assign({}, proj.rateCard || {}, { roomTiers: tempRoomTiers, selectedTier: 'custom' });
+        var tempProj = {
+          plan: proj.plan,
+          rateCard: tempRateCard,
+          commercialCharges: proj.commercialCharges,
+          meta: proj.meta
+        };
+        try {
+          var q = Core.generateFullQuotation(tempProj, app.selectedBOQRooms || ['all']);
+          var comm = app.computeCommercialSummary(q.subtotalWoodwork, app.getCommercialCharges());
+          var liveEl = roomDrawer.querySelector('#cqCustomLiveTotal');
+          if (liveEl) liveEl.textContent = fmtINR(comm.grandTotal);
+        } catch (_) {}
+      }
+
+      function toggleRoomDrawer(show) {
+        var isOpen = show !== undefined ? show : (roomDrawer.style.display !== 'none');
+        if (!isOpen) {
+          populateRoomDrawer();
+          roomDrawer.style.display = 'block';
+        } else {
+          roomDrawer.style.display = 'none';
+        }
+      }
+
+      var openBtn = body.querySelector('#cqOpenCustomVariantBtn');
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          toggleRoomDrawer();
+        });
+      }
+
+      var cancelBtn = roomDrawer.querySelector('#cqCancelCustomBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+          toggleRoomDrawer(false);
+        });
+      }
+
+      var bulkSelect = roomDrawer.querySelector('#cqBulkRoomTierSelect');
+      if (bulkSelect) {
+        bulkSelect.addEventListener('change', function () {
+          var val = this.value;
+          if (!val) return;
+          roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (s) {
+            s.value = val;
+          });
+          updateDrawerLiveTotal();
+        });
+      }
+
+      roomDrawer.addEventListener('change', function (e) {
+        if (e.target && e.target.classList.contains('cq-room-tier-select')) {
+          updateDrawerLiveTotal();
+        }
+      });
+
+      var applyBtn = roomDrawer.querySelector('#cqApplyCustomBtn');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', function () {
+          var newRoomTiers = {};
+          roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (sel) {
+            var rId = sel.getAttribute('data-room-id');
+            if (rId) newRoomTiers[rId] = sel.value;
+          });
+          proj.rateCard = proj.rateCard || {};
+          proj.rateCard.roomTiers = newRoomTiers;
+          if (typeof app.saveToLocalStorage === 'function') app.saveToLocalStorage();
+
+          try {
+            var cq = buildVariantQuotePayload(app, 'custom', {}, '');
+            renderCustomCard(cq);
+          } catch (err) {
+            console.error('Failed to build custom variant quote:', err);
+          }
+          toggleRoomDrawer(false);
+        });
+      }
+
+      // If project already has roomTiers defined, render custom card on load
+      if (proj.rateCard && proj.rateCard.roomTiers && Object.keys(proj.rateCard.roomTiers).length > 0) {
+        try {
+          var initCq = buildVariantQuotePayload(app, 'custom', {}, '');
+          renderCustomCard(initCq);
+        } catch (_) {}
+      }
 
       async function gatherReviewPayload() {
         var selectedTiers = [];
@@ -50320,6 +51126,20 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             selected: selectedTiers.indexOf(v.key) !== -1
           };
         });
+
+        var customMatched = variantQuotes.filter(function (vq) { return vq.tierKey === 'custom'; })[0];
+        if (customMatched || (proj.rateCard && proj.rateCard.roomTiers && Object.keys(proj.rateCard.roomTiers).length)) {
+          var cInfo = customMatched || buildVariantQuotePayload(app, 'custom', {}, '');
+          allVariantsPricing.push({
+            tierKey: 'custom',
+            tierTitle: 'CUSTOM VARIANT (Room-Wise)',
+            isCustomVariant: true,
+            unitCount: (cInfo.items || []).length,
+            grandTotal: Math.round(cInfo.grandTotal || 0),
+            selected: selectedTiers.indexOf('custom') !== -1,
+            roomBreakdown: cInfo.roomsSummary || []
+          });
+        }
 
         return {
           projectId: getActiveProjectId(app),
@@ -62574,7 +63394,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=51')
+      navigator.serviceWorker.register('./sw.js?v=55')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
