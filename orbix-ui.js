@@ -9346,7 +9346,7 @@
       if (btnAddonsPicker) {
         btnAddonsPicker.addEventListener('click', function () {
           self.openAddonsPickerModal(function () {
-            self.renderCommercialChargesSummary(boqEl);
+            self.renderBOQ(true);
             self.saveToLocalStorage();
           });
         });
@@ -9356,7 +9356,7 @@
       if (btnCustomAddons) {
         btnCustomAddons.addEventListener('click', function () {
           self.openCustomAddonsConfiguratorModal(function () {
-            self.renderCommercialChargesSummary(boqEl);
+            self.renderBOQ(true);
             self.saveToLocalStorage();
           });
         });
