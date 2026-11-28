@@ -3270,19 +3270,133 @@
         }
       }
 
-      // Keep furniture visible so units remain interactive and selectable from all angles
-      furnMeshes.forEach(function (fMesh) {
+      // Resolve which wall each unit sits along (using live position, back-face distance & wall alignment)
+      function resolveUnitWallId(fMesh) {
         var ud = fMesh.userData || {};
         var furnObj = ud.furniture || {};
-        var isWallMounted = (furnObj.category && furnObj.category.indexOf('wall') !== -1) ||
-                            (furnObj.elevation !== undefined && parseFloat(furnObj.elevation) >= 1200);
-        // Only high wall-mounted cabinets directly on a cut wall hide; all floor, base, and decor units stay visible!
-        if (isWallMounted && ud.wallId && wallVisibility[ud.wallId] === false) {
+        var dims = furnObj.dimensions || {};
+        var W = parseFloat(dims.W) || 600;
+        var D = parseFloat(dims.D) || 600;
+        var cx = (fMesh.position && typeof fMesh.position.x === 'number') ? fMesh.position.x : ((furnObj.pos && furnObj.pos.x) || 0);
+        var cz = (fMesh.position && typeof fMesh.position.z === 'number') ? fMesh.position.z : ((furnObj.pos && furnObj.pos.y) || 0);
+        var ry = (fMesh.rotation && typeof fMesh.rotation.y === 'number') ? fMesh.rotation.y : -((furnObj.rotY) || 0);
+
+        // Local -Z is unit back face; local +X is unit width axis
+        var sinR = Math.sin(ry), cosR = Math.cos(ry);
+        var backX = cx - (D * 0.5) * sinR;
+        var backZ = cz - (D * 0.5) * cosR;
+        var frontX = cx + (D * 0.5) * sinR;
+        var frontZ = cz + (D * 0.5) * cosR;
+        var ux = cosR, uz = -sinR;
+
+        var bestWallId = null;
+        var bestScore = Infinity;
+
+        for (var wi = 0; wi < wallMeshes.length; wi++) {
+          var wMesh = wallMeshes[wi];
+          var wud = wMesh.userData || {};
+          var wId = wud.wallId;
+          var p1 = wud.start, p2 = wud.end;
+          if (!wId || !p1 || !p2) continue;
+
+          var dx = p2.x - p1.x, dy = p2.y - p1.y;
+          var lenSq = dx * dx + dy * dy;
+          if (lenSq < 1) continue;
+          var len = Math.sqrt(lenSq);
+          var wx = dx / len, wz = dy / len;
+          var wallT = parseFloat(wud.thickness || (wud.wall && wud.wall.thickness)) || 150;
+          var halfWall = wallT * 0.5;
+
+          // Project unit back-center, front-center, and center onto wall segment
+          var tBackRaw = ((backX - p1.x) * dx + (backZ - p1.y) * dy) / lenSq;
+          var tBack = Math.max(0, Math.min(1, tBackRaw));
+          var backDist = Math.hypot(backX - (p1.x + tBack * dx), backZ - (p1.y + tBack * dy));
+
+          var tFront = Math.max(0, Math.min(1, ((frontX - p1.x) * dx + (frontZ - p1.y) * dy) / lenSq));
+          var frontDist = Math.hypot(frontX - (p1.x + tFront * dx), frontZ - (p1.y + tFront * dy));
+
+          var tCtrRaw = ((cx - p1.x) * dx + (cz - p1.y) * dy) / lenSq;
+          var tCtr = Math.max(0, Math.min(1, tCtrRaw));
+          var centerDist = Math.hypot(cx - (p1.x + tCtr * dx), cz - (p1.y + tCtr * dy));
+
+          // Ensure unit lies along this wall span (not far beyond its endpoints)
+          var overDist = 0;
+          if (tCtrRaw < 0) overDist = -tCtrRaw * len;
+          else if (tCtrRaw > 1) overDist = (tCtrRaw - 1) * len;
+          if (overDist > Math.max(260, W * 0.45)) continue;
+
+          // Parallelism between unit width axis and wall direction (1 = parallel, 0 = perpendicular)
+          var align = Math.abs(ux * wx + uz * wz);
+          var backGap = Math.max(0, backDist - halfWall);
+          var edgeGap = Math.max(0, Math.min(backDist, frontDist) - halfWall);
+          var isExplicitWall = !!(furnObj.wallId && furnObj.wallId === wId);
+
+          var qualifies = (align >= 0.65 && backGap <= 420) ||
+                          (align >= 0.5 && edgeGap <= 260) ||
+                          (isExplicitWall && centerDist <= (Math.max(W, D) * 0.5 + halfWall + 450));
+          if (!qualifies) continue;
+
+          var score = Math.min(backGap, edgeGap + 90) + (1 - align) * 450 - (isExplicitWall ? 35 : 0);
+          if (score < bestScore) {
+            bestScore = score;
+            bestWallId = wId;
+          }
+        }
+
+        if (bestWallId) {
+          ud.wallId = bestWallId;
+        }
+        return bestWallId;
+      }
+
+      // Hide ALL units (base, wall, tall, wardrobe, loft, TV/crockery, appliances) along any cut wall.
+      // In 'all' and 'hidden' (All Walls Hidden) modes, keep units visible so the room layout remains inspectable.
+      var shouldHideCutWallUnits = (mode !== 'all' && mode !== 'hidden');
+      var hiddenUnitBoxes = [];
+
+      furnMeshes.forEach(function (fMesh) {
+        if (!shouldHideCutWallUnits) {
+          fMesh.visible = true;
+          return;
+        }
+        var attachedWallId = resolveUnitWallId(fMesh);
+        if (attachedWallId && wallVisibility[attachedWallId] === false) {
           fMesh.visible = false;
+          // Record 2D footprint so small countertop decors resting on this unit also hide cleanly
+          var ud = fMesh.userData || {};
+          var furnObj = ud.furniture || {};
+          var dims = furnObj.dimensions || {};
+          var W = parseFloat(dims.W) || 600;
+          var D = parseFloat(dims.D) || 600;
+          var ry = (fMesh.rotation && typeof fMesh.rotation.y === 'number') ? fMesh.rotation.y : -((furnObj.rotY) || 0);
+          var c = Math.abs(Math.cos(ry)), s = Math.abs(Math.sin(ry));
+          var halfX = (W * c + D * s) * 0.5 + 40;
+          var halfZ = (W * s + D * c) * 0.5 + 40;
+          var fx = (fMesh.position && typeof fMesh.position.x === 'number') ? fMesh.position.x : ((furnObj.pos && furnObj.pos.x) || 0);
+          var fz = (fMesh.position && typeof fMesh.position.z === 'number') ? fMesh.position.z : ((furnObj.pos && furnObj.pos.y) || 0);
+          hiddenUnitBoxes.push({ minX: fx - halfX, maxX: fx + halfX, minZ: fz - halfZ, maxZ: fz + halfZ });
         } else {
           fMesh.visible = true;
         }
       });
+
+      // Second pass: hide elevated countertop/shelf decors (sink, hob, kettle, microwave, etc.) sitting directly on a hidden unit
+      if (shouldHideCutWallUnits && hiddenUnitBoxes.length > 0) {
+        furnMeshes.forEach(function (fMesh) {
+          if (!fMesh.visible) return;
+          var fy = (fMesh.position && typeof fMesh.position.y === 'number') ? fMesh.position.y : 0;
+          if (fy < 100) return;
+          var fx = (fMesh.position && typeof fMesh.position.x === 'number') ? fMesh.position.x : 0;
+          var fz = (fMesh.position && typeof fMesh.position.z === 'number') ? fMesh.position.z : 0;
+          for (var bi = 0; bi < hiddenUnitBoxes.length; bi++) {
+            var b = hiddenUnitBoxes[bi];
+            if (fx >= b.minX && fx <= b.maxX && fz >= b.minZ && fz <= b.maxZ) {
+              fMesh.visible = false;
+              break;
+            }
+          }
+        });
+      }
     }
 
     var cachedStageRect = null;
@@ -6759,7 +6873,7 @@
         if (newMode === 'all_obstructing') msg = 'Auto-cutting all obstructing outer & inner walls';
         else if (newMode.indexOf('wall_') === 0) msg = 'Wall ' + newMode.replace('wall_', '') + ' & attached units hidden';
         else if (newMode === 'all') msg = 'Showing all walls & units';
-        else if (newMode === 'hidden') msg = 'Hiding all walls & attached units';
+        else if (newMode === 'hidden') msg = 'All walls hidden (units kept visible)';
         toast(msg);
       }
       if (GL.ok && GL.updateWallCutaway) {

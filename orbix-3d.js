@@ -1273,15 +1273,17 @@
       var furn = furniture[f];
       var furnMesh = this.buildFurnitureMesh(furn);
       if (furnMesh) {
-        var bestWall = null, bestDist = 999999;
-        if (furn.wallId) {
-          var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
-          if (matchedWall) {
-            var matchedIdx = walls.indexOf(matchedWall);
-            bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
-          }
-        }
-        if (!bestWall && furn.pos && walls.length > 0) {
+        var bestWall = null, bestScore = 999999;
+        if (furn.pos && walls.length > 0) {
+          var fDims = furn.dimensions || {};
+          var fW = parseFloat(fDims.W) || 600;
+          var fD = parseFloat(fDims.D) || 600;
+          var fRy = -(furn.rotY || 0);
+          var fSin = Math.sin(fRy), fCos = Math.cos(fRy);
+          var fBackX = furn.pos.x - (fD * 0.5) * fSin;
+          var fBackY = furn.pos.y - (fD * 0.5) * fCos;
+          var fUx = fCos, fUy = -fSin;
+
           for (var wi = 0; wi < walls.length; wi++) {
             var wObj = walls[wi];
             if (!wObj || !wObj.start || !wObj.end) continue;
@@ -1289,16 +1291,36 @@
             var dx = p2.x - p1.x, dy = p2.y - p1.y;
             var lenSq = dx * dx + dy * dy;
             if (lenSq < 1) continue;
-            var t = Math.max(0, Math.min(1, ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq));
-            var projX = p1.x + t * dx, projY = p1.y + t * dy;
-            var dist = Math.hypot(furn.pos.x - projX, furn.pos.y - projY);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: dist };
+            var len = Math.sqrt(lenSq);
+            var wx = dx / len, wy = dy / len;
+            var halfW = (parseFloat(wObj.thickness) || 150) * 0.5;
+
+            var tBack = Math.max(0, Math.min(1, ((fBackX - p1.x) * dx + (fBackY - p1.y) * dy) / lenSq));
+            var backDist = Math.hypot(fBackX - (p1.x + tBack * dx), fBackY - (p1.y + tBack * dy));
+            var tCtrRaw = ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq;
+            var overDist = tCtrRaw < 0 ? (-tCtrRaw * len) : (tCtrRaw > 1 ? ((tCtrRaw - 1) * len) : 0);
+            if (overDist > Math.max(260, fW * 0.45)) continue;
+
+            var align = Math.abs(fUx * wx + fUy * wy);
+            var backGap = Math.max(0, backDist - halfW);
+            var isExp = !!(furn.wallId && furn.wallId === wObj.id);
+            if ((align >= 0.65 && backGap <= 420) || (isExp && backGap <= 650)) {
+              var score = backGap + (1 - align) * 450 - (isExp ? 35 : 0);
+              if (score < bestScore) {
+                bestScore = score;
+                bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: backGap };
+              }
             }
           }
         }
-        if (bestWall && (furn.wallId || bestDist < 1200)) {
+        if (!bestWall && furn.wallId) {
+          var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
+          if (matchedWall) {
+            var matchedIdx = walls.indexOf(matchedWall);
+            bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
+          }
+        }
+        if (bestWall) {
           furnMesh.userData.wallId = bestWall.id;
           furnMesh.userData.wallIndex = bestWall.index;
           furnMesh.userData.wallNumber = bestWall.number;
@@ -6266,17 +6288,19 @@
     var newMesh = this.buildFurnitureMesh(furn);
     if (!newMesh) return null;
 
-    // 3. Fast wall association
+    // 3. Fast back-face & alignment wall association
     var walls = (this.currentPlan && this.currentPlan.walls) || [];
-    var bestWall = null, bestDist = 999999;
-    if (furn.wallId) {
-      var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
-      if (matchedWall) {
-        var matchedIdx = walls.indexOf(matchedWall);
-        bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
-      }
-    }
-    if (!bestWall && furn.pos && walls.length > 0) {
+    var bestWall = null, bestScore = 999999;
+    if (furn.pos && walls.length > 0) {
+      var fDims = furn.dimensions || {};
+      var fW = parseFloat(fDims.W) || 600;
+      var fD = parseFloat(fDims.D) || 600;
+      var fRy = -(furn.rotY || 0);
+      var fSin = Math.sin(fRy), fCos = Math.cos(fRy);
+      var fBackX = furn.pos.x - (fD * 0.5) * fSin;
+      var fBackY = furn.pos.y - (fD * 0.5) * fCos;
+      var fUx = fCos, fUy = -fSin;
+
       for (var wi = 0; wi < walls.length; wi++) {
         var wObj = walls[wi];
         if (!wObj || !wObj.start || !wObj.end) continue;
@@ -6284,25 +6308,47 @@
         var dx = p2.x - p1.x, dy = p2.y - p1.y;
         var lenSq = dx * dx + dy * dy;
         if (lenSq < 1) continue;
-        var t = Math.max(0, Math.min(1, ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq));
-        var projX = p1.x + t * dx, projY = p1.y + t * dy;
-        var dist = Math.hypot(furn.pos.x - projX, furn.pos.y - projY);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: dist };
+        var len = Math.sqrt(lenSq);
+        var wx = dx / len, wy = dy / len;
+        var halfW = (parseFloat(wObj.thickness) || 150) * 0.5;
+
+        var tBack = Math.max(0, Math.min(1, ((fBackX - p1.x) * dx + (fBackY - p1.y) * dy) / lenSq));
+        var backDist = Math.hypot(fBackX - (p1.x + tBack * dx), fBackY - (p1.y + tBack * dy));
+        var tCtrRaw = ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq;
+        var overDist = tCtrRaw < 0 ? (-tCtrRaw * len) : (tCtrRaw > 1 ? ((tCtrRaw - 1) * len) : 0);
+        if (overDist > Math.max(260, fW * 0.45)) continue;
+
+        var align = Math.abs(fUx * wx + fUy * wy);
+        var backGap = Math.max(0, backDist - halfW);
+        var isExp = !!(furn.wallId && furn.wallId === wObj.id);
+        if ((align >= 0.65 && backGap <= 420) || (isExp && backGap <= 650)) {
+          var score = backGap + (1 - align) * 450 - (isExp ? 35 : 0);
+          if (score < bestScore) {
+            bestScore = score;
+            bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: backGap };
+          }
         }
       }
     }
-    if (bestWall && (furn.wallId || bestDist < 1200)) {
+    if (!bestWall && furn.wallId) {
+      var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
+      if (matchedWall) {
+        var matchedIdx = walls.indexOf(matchedWall);
+        bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
+      }
+    }
+    if (bestWall) {
       newMesh.userData.wallId = bestWall.id;
       newMesh.userData.wallIndex = bestWall.index;
       newMesh.userData.wallNumber = bestWall.number;
     }
 
     this.group.add(newMesh);
+    this.group._cacheDirty = true;
 
-    // 4. Trigger render update
+    // 4. Trigger render & cutaway update
     if (window.__cc && window.__cc.gl) {
+      if (window.__cc.gl.updateWallCutaway) window.__cc.gl.updateWallCutaway(true);
       if (window.__cc.gl.apply) window.__cc.gl.apply();
       if (window.__cc.gl.settle) window.__cc.gl.settle();
     }

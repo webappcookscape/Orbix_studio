@@ -2632,20 +2632,23 @@
         if (self.wallChainStart) self.render();
       }
 
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.code === 'Escape') {
         if (self.dadoDrawStart) {
           self.dadoDrawStart = null;
           self.render();
           return;
         }
-        if (self.activeTool === 'dimension') {
+        if (self.activeTool === 'dimension' || self.activeTool === 'measure') {
+          e.preventDefault();
           self.dimensionStart = null;
+          self.lastTapeMeasure = null;
+          self.setTool('select');
           self.render();
           return;
         }
         if (self.activeTool === 'calibrate') {
-          self.activeTool = 'select';
           if (self.underlay) self.underlay.calibPoints = [];
+          self.setTool('select');
           self.render();
           return;
         }
@@ -2831,15 +2834,17 @@
         self.deleteSelected();
         return;
       }
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.code === 'Escape') {
         if (self.numericInputBuffer) {
           self.numericInputBuffer = '';
           self.render();
           return;
         }
         self.wallChainStart = null;
+        self.dimensionStart = null;
+        self.lastTapeMeasure = null;
         self.selected = [];
-        self.activeTool = 'select';
+        self.setTool('select');
         self.render();
         return;
       }
@@ -2855,6 +2860,10 @@
     }
     if (tool !== 'dado') {
       this.dadoDrawStart = null;
+    }
+    if (tool !== 'dimension' && tool !== 'measure') {
+      this.dimensionStart = null;
+      this.lastTapeMeasure = null;
     }
     if (this.canvas) {
       if (tool === 'wall' || tool === 'divider' || tool === 'dimension' || tool === 'dado') {
