@@ -6538,6 +6538,17 @@
 
   /* ══════════ VIEWS ══════════ */
   function setView(v) {
+    // Strictly restrict Activity Logs to admin@cookscape.com ONLY
+    if (v === 'logs') {
+      var canViewLogs = !!(window.OrbixProjects && typeof window.OrbixProjects.isPrimaryLogsAdmin === 'function' && window.OrbixProjects.isPrimaryLogsAdmin());
+      if (!canViewLogs) {
+        if (typeof showToast === 'function') {
+          showToast('Access restricted: Activity Logs are available only for admin@cookscape.com');
+        }
+        v = 'home';
+      }
+    }
+
     // Check employee role restrictions
     if (window.OrbixProjects && window.OrbixProjects.currentUser && !window.OrbixProjects.isAdmin()) {
       var allowed = ['home', 'plan', 'design', 'boq', 'elev', 'quote-history'];
@@ -6643,6 +6654,9 @@
     if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }
     if (v === "quote-history" && window.OrbixQuoteHistory && typeof window.OrbixQuoteHistory.onViewShown === 'function') {
       window.OrbixQuoteHistory.onViewShown();
+    }
+    if (v === "logs" && window.OrbixLogs && typeof window.OrbixLogs.onViewShown === 'function') {
+      window.OrbixLogs.onViewShown();
     }
   }
   window.setView = setView;

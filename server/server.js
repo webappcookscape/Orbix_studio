@@ -375,7 +375,9 @@ app.post('/api/login', (req, res, next) => {
   next();
 });
 
-// ── Mount Layered REST API Routes ──
+// ── Global Activity Logger + Layered REST API Routes ──
+const activityLogMiddleware = require('./middlewares/activityLogMiddleware');
+app.use('/api', activityLogMiddleware);
 app.use('/api', apiRoutes);
 
 // ── Dedicated Tool Pages ──
@@ -412,6 +414,7 @@ const SPA_VIEWS = [
   '/boq',
   '/quote',
   '/quote-history',
+  '/logs',
   '/gallery',
   '/kitchen',
   '/sheet',

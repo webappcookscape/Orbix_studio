@@ -26,6 +26,7 @@
       '/boq': 'boq',
       '/quote': 'quote',
       '/quote-history': 'quote-history',
+      '/logs': 'logs',
       '/gallery': 'gallery',
       '/kitchen': 'kitchen',
       '/sheet': 'sheet',
@@ -45,6 +46,7 @@
       'boq': '/pricing',
       'quote': '/quote',
       'quote-history': '/quote-history',
+      'logs': '/logs',
       'gallery': '/gallery',
       'kitchen': '/kitchen',
       'sheet': '/sheet',
@@ -75,6 +77,7 @@
         '/boq': 'boq',
         '/quote': 'quote',
         '/quote-history': 'quote-history',
+        '/logs': 'logs',
         '/gallery': 'gallery',
         '/kitchen': 'kitchen',
         '/sheet': 'sheet',
@@ -162,7 +165,9 @@
         if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+            var allowed = (typeof OrbixProjects.getAllowedViews === 'function')
+              ? OrbixProjects.getAllowedViews()
+              : ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
             if (allowed.indexOf(v) === -1) {
               if (window.location.pathname !== '/home') {
                 self.updateUrl('home', false);
@@ -257,14 +262,19 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+      var allowed = (typeof OrbixProjects.getAllowedViews === 'function')
+        ? OrbixProjects.getAllowedViews()
+        : ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
       if (allowed.indexOf(v) === -1) {
+        if (v === 'logs' && typeof showToast === 'function') {
+          showToast('Access restricted: Activity Logs are available only for admin@cookscape.com');
+        }
         v = 'home';
       }
 
       // If user jumps directly from Home to a workspace tab before clicking a project card,
       // seamlessly open their last active project (or newest project) on demand.
-      if (v !== 'home' && v !== 'quote-history' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
+      if (v !== 'home' && v !== 'quote-history' && v !== 'logs' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
         var pendingId = OrbixProjects._pendingAutoOpenProjectId;
         var toOpen = (pendingId && OrbixProjects.projects.find(function (p) { return p && String(p.id) === String(pendingId); })) || OrbixProjects.projects[0];
         if (toOpen && toOpen.id && typeof OrbixProjects.openProject === 'function') {
@@ -322,7 +332,9 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+      var allowed = (typeof OrbixProjects.getAllowedViews === 'function')
+        ? OrbixProjects.getAllowedViews()
+        : ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
       if (!v || allowed.indexOf(v) === -1) {
         v = 'home';
       }
@@ -875,6 +887,19 @@
       return r === 'admin' || r.indexOf('admin') !== -1;
     },
 
+    isPrimaryLogsAdmin: function () {
+      if (!this.currentUser) return false;
+      return String(this.currentUser.email || '').trim().toLowerCase() === 'admin@cookscape.com';
+    },
+
+    getAllowedViews: function () {
+      var views = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+      if (this.isPrimaryLogsAdmin()) {
+        views.push('logs');
+      }
+      return views;
+    },
+
     loadCachedUser: function () {
       try {
         if (!this.isLocalSessionValid()) {
@@ -964,6 +989,14 @@
       this.currentUser = null;
       this.activeProjectId = null;
       this.projects = [];
+      if (window.OrbixLogs && typeof window.OrbixLogs.reset === 'function') {
+        window.OrbixLogs.reset();
+      }
+      var logsTab = document.getElementById('vtab-logs');
+      if (logsTab) {
+        logsTab.style.display = 'none';
+        logsTab.setAttribute('hidden', '');
+      }
       if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
         window.OrbixUI.resetProject('New Project');
       }
@@ -1044,7 +1077,7 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowedViews = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+            var allowedViews = self.getAllowedViews();
             if (allowedViews.indexOf(v) === -1) {
               origSetView('home');
               if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
@@ -1071,7 +1104,8 @@
         userModalEl.classList.toggle('role-admin', isAdm);
       }
       // Pages visible for all users: Home, Floor Plan (2D), 3D Studio, 2D Drawings (A4), Pricing, Quote History
-      var allowedViews = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
+      // Logs tab is strictly visible ONLY for admin@cookscape.com
+      var allowedViews = this.getAllowedViews();
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
