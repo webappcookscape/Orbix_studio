@@ -1062,6 +1062,273 @@ class ClientQuoteService {
     return local.map(sanitizeRecordForManager);
   }
 
+  // Full Quote History across projects with enriched User Details, BH Details, Generated History & Opened History
+  async listQuoteHistory(user) {
+    if (!user) throw makeError('Authentication required', 401);
+
+    let rawRecords = [];
+    const isAdmin = String(user.role || '').toLowerCase() === 'admin' || String(user.role || '').toLowerCase().includes('admin');
+
+    if (await ensurePgTable()) {
+      try {
+        const sqlBase = `
+          SELECT
+            id,
+            project_id,
+            created_by,
+            share_token,
+            title,
+            quote_code,
+            client_name,
+            client_phone,
+            client_email,
+            site_address,
+            client_username,
+            selected_tiers,
+            security_settings,
+            expires_at,
+            is_revoked,
+            view_count,
+            last_viewed_at,
+            access_logs,
+            created_at,
+            updated_at,
+            jsonb_build_object(
+              'meta', CASE WHEN jsonb_typeof(quote_snapshot) = 'object' AND jsonb_typeof(quote_snapshot->'meta') = 'object' THEN quote_snapshot->'meta' ELSE '{}'::jsonb END,
+              'designer', CASE WHEN jsonb_typeof(quote_snapshot) = 'object' AND jsonb_typeof(quote_snapshot->'designer') = 'object' THEN quote_snapshot->'designer' ELSE '{}'::jsonb END,
+              'variantQuotes', CASE
+                WHEN jsonb_typeof(quote_snapshot) = 'object' AND jsonb_typeof(quote_snapshot->'variantQuotes') = 'array' THEN
+                  COALESCE((
+                    SELECT jsonb_agg(jsonb_build_object(
+                      'tierKey', v->>'tierKey',
+                      'tierTitle', v->>'tierTitle',
+                      'currencySymbol', COALESCE(v->>'currencySymbol', '₹'),
+                      'grandTotal', COALESCE(v->'commercial'->>'grandTotal', v->>'grandTotal', '0'),
+                      'commercial', jsonb_build_object(
+                        'discountPercent', COALESCE(v->'commercial'->>'discountPercent', '0'),
+                        'adpPercent', COALESCE(v->'commercial'->>'adpPercent', '0'),
+                        'grandTotal', COALESCE(v->'commercial'->>'grandTotal', v->>'grandTotal', '0')
+                      )
+                    ))
+                    FROM jsonb_array_elements(quote_snapshot->'variantQuotes') AS v
+                  ), '[]'::jsonb)
+                ELSE '[]'::jsonb
+              END
+            ) AS quote_snapshot
+          FROM client_quotes
+        `;
+        const rows = isAdmin
+          ? await prismaConfig.prisma.$queryRawUnsafe(`${sqlBase} ORDER BY created_at DESC LIMIT 400`)
+          : await prismaConfig.prisma.$queryRawUnsafe(
+              `${sqlBase} WHERE created_by = $1 OR project_id IN (SELECT id FROM projects WHERE created_by = $1) ORDER BY created_at DESC LIMIT 400`,
+              String(user.id || '')
+            );
+        rawRecords = (rows || []).map(normalizeRow);
+      } catch (pgErr) {
+        console.warn('[ClientQuoteService] listQuoteHistory PG fallback:', pgErr.message);
+      }
+    }
+
+    if (!rawRecords.length) {
+      rawRecords = readLocalStore().filter((r) => isAdmin || String(r.createdBy || '') === String(user.id || ''));
+      rawRecords.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+
+    // Load users + lightweight project metadata in parallel (2 tiny queries, zero N+1)
+    let users = [];
+    const projMetaById = {};
+    try {
+      const [userList, projRows] = await Promise.all([
+        userService.getAllUsers().catch(() => []),
+        (prismaConfig.isConnected && typeof prismaConfig.prisma.$queryRawUnsafe === 'function')
+          ? prismaConfig.prisma.$queryRawUnsafe(`
+              SELECT
+                id,
+                title,
+                created_by AS "createdBy",
+                owner_name AS "ownerName",
+                owner_email AS "ownerEmail",
+                CASE WHEN jsonb_typeof(data) = 'object' THEN
+                  COALESCE(
+                    NULLIF(data->'details'->>'bhName', ''),
+                    NULLIF(data->'plan'->'meta'->>'bhName', ''),
+                    NULLIF(data->'details'->>'designerName', ''),
+                    ''
+                  )
+                ELSE '' END AS "bhName"
+              FROM projects
+            `).catch(() => [])
+          : Promise.resolve([])
+      ]);
+      users = Array.isArray(userList) ? userList : [];
+      (projRows || []).forEach((pr) => {
+        if (pr && pr.id) projMetaById[String(pr.id)] = pr;
+      });
+    } catch (_) {}
+
+    const GENERATED_EVENTS = new Set(['review_link_created', 'head_approved', 'client_link_activated']);
+    const OPENED_EVENTS = new Set(['login_success', 'login_failed', 'whatsapp_alert', 'portal_view', 'slide_change', 'print_attempt', 'copy_attempt', 'blur_shield']);
+
+    const quotes = rawRecords.map((rec) => {
+      const base = sanitizeRecordForManager(rec);
+      const snap = rec.quoteSnapshot || {};
+      const snapMeta = snap.meta || {};
+      const snapDesigner = snap.designer || {};
+      const proj = projMetaById[String(rec.projectId || '')] || null;
+      const sec = rec.securitySettings || {};
+      const logs = Array.isArray(rec.accessLogs) ? rec.accessLogs : [];
+
+      // 1. User Details (who created the quote / project owner)
+      const creatorUser = findUserByNameOrId(users, {
+        id: rec.createdBy || (proj && proj.createdBy),
+        email: snapDesigner.email || (proj && proj.ownerEmail),
+        name: snapDesigner.name || (proj && proj.ownerName)
+      });
+      const userDetails = {
+        id: (creatorUser && creatorUser.id) || rec.createdBy || '',
+        name: (creatorUser && creatorUser.name) || snapDesigner.name || (proj && proj.ownerName) || 'Cookscape Designer',
+        username: (creatorUser && creatorUser.username) || '',
+        email: (creatorUser && creatorUser.email) || snapDesigner.email || (proj && proj.ownerEmail) || '',
+        phone: (creatorUser && creatorUser.phone) || snapDesigner.phone || '',
+        designation: (creatorUser && creatorUser.designation) || ((creatorUser && creatorUser.role === 'admin') ? 'Admin' : 'Floor Architect / FA'),
+        role: (creatorUser && creatorUser.role) || 'employee'
+      };
+
+      // 2. BH Details (Business Head assigned to project/quote + approver info)
+      const rawBhName = String(
+        snapMeta.bhName ||
+        (proj && proj.bhName) ||
+        ''
+      ).trim();
+      const bhUser = rawBhName
+        ? findUserByNameOrId(users, { name: rawBhName, preferBH: true })
+        : (base.approvedBy ? findUserByNameOrId(users, { name: base.approvedBy, preferBH: true }) : null);
+      const bhDetails = {
+        name: (bhUser && bhUser.name) || rawBhName || base.approvedBy || 'Unassigned',
+        email: (bhUser && bhUser.email) || '',
+        phone: (bhUser && bhUser.phone) || '',
+        designation: (bhUser && bhUser.designation) || 'Business Head',
+        approvedBy: base.approvedBy || '',
+        approvedAt: base.approvedAt || null,
+        approvalRemarks: base.approvalRemarks || ''
+      };
+
+      // 3. Generated History
+      const generatedEvents = [];
+      logs.forEach((ev) => {
+        if (!ev || !ev.event) return;
+        if (GENERATED_EVENTS.has(ev.event)) {
+          generatedEvents.push({
+            event: ev.event,
+            at: ev.at || null,
+            detail: ev.detail || '',
+            ip: ev.ip || ''
+          });
+        }
+      });
+      if (!generatedEvents.some((e) => e.event === 'review_link_created') && rec.createdAt) {
+        generatedEvents.unshift({
+          event: 'review_link_created',
+          at: rec.createdAt,
+          detail: `Created by ${userDetails.name}`,
+          ip: ''
+        });
+      }
+      if (!generatedEvents.some((e) => e.event === 'head_approved') && base.approvedAt) {
+        generatedEvents.push({
+          event: 'head_approved',
+          at: base.approvedAt,
+          detail: `Approved by ${base.approvedBy || 'Business Head'}`,
+          ip: ''
+        });
+      }
+      const clientLinkGeneratedAt = sec.clientLinkGeneratedAt ||
+        (generatedEvents.slice().reverse().find((e) => e.event === 'client_link_activated') || {}).at ||
+        (base.clientLinkActivated ? rec.createdAt : null);
+      if (clientLinkGeneratedAt && !generatedEvents.some((e) => e.event === 'client_link_activated')) {
+        generatedEvents.push({
+          event: 'client_link_activated',
+          at: clientLinkGeneratedAt,
+          detail: `Client link activated for ${rec.clientUsername || rec.clientName}`,
+          ip: ''
+        });
+      }
+      generatedEvents.sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
+
+      const generatedHistory = {
+        reviewCreatedAt: rec.createdAt || null,
+        approvedAt: base.approvedAt || null,
+        clientLinkGeneratedAt: clientLinkGeneratedAt || null,
+        latestGeneratedDate: formatQuoteLinkDate(resolveQuoteLinkGeneratedAt(rec)),
+        eventCount: generatedEvents.length,
+        events: generatedEvents
+      };
+
+      // 4. Opened History
+      const openedEvents = [];
+      let failedLoginCount = 0;
+      let firstOpenedAt = null;
+      logs.forEach((ev) => {
+        if (!ev || !ev.event) return;
+        if (ev.event === 'login_failed') failedLoginCount += 1;
+        if (ev.event === 'login_success' && ev.at && !firstOpenedAt) {
+          firstOpenedAt = ev.at;
+        }
+        if (OPENED_EVENTS.has(ev.event) || !GENERATED_EVENTS.has(ev.event)) {
+          openedEvents.push({
+            event: ev.event,
+            at: ev.at || null,
+            ip: ev.ip || '',
+            ua: ev.ua || '',
+            detail: ev.detail || ''
+          });
+        }
+      });
+      openedEvents.sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
+
+      const viewCount = Number(rec.viewCount || 0);
+      const lastOpenedAt = rec.lastViewedAt || (openedEvents.find((e) => e.event === 'login_success') || {}).at || null;
+      const openedHistory = {
+        viewCount,
+        isOpened: viewCount > 0 || Boolean(lastOpenedAt),
+        firstOpenedAt: firstOpenedAt || lastOpenedAt || null,
+        lastOpenedAt,
+        failedLoginCount,
+        lastWhatsappAlert: base.lastWhatsappAlert || null,
+        eventCount: openedEvents.length,
+        events: openedEvents
+      };
+
+      const isExpired = Boolean(rec.expiresAt && new Date(rec.expiresAt).getTime() < Date.now());
+      let statusBadge = 'pending_approval';
+      if (rec.isRevoked) statusBadge = 'revoked';
+      else if (isExpired) statusBadge = 'expired';
+      else if (base.clientLinkActivated) statusBadge = 'active';
+      else if (base.approvalStatus === 'approved') statusBadge = 'approved';
+
+      return Object.assign({}, base, {
+        projectTitle: (proj && proj.title) || snapMeta.title || rec.title || '',
+        statusBadge,
+        isExpired,
+        staffViewKey: sec.staffViewKey || '',
+        userDetails,
+        bhDetails,
+        generatedHistory,
+        openedHistory
+      });
+    });
+
+    const summary = {
+      totalQuotes: quotes.length,
+      activeClientLinks: quotes.filter((q) => q.statusBadge === 'active').length,
+      pendingApproval: quotes.filter((q) => q.statusBadge === 'pending_approval').length,
+      openedQuotes: quotes.filter((q) => q.openedHistory && q.openedHistory.isOpened).length,
+      totalOpens: quotes.reduce((acc, q) => acc + Number((q.openedHistory && q.openedHistory.viewCount) || 0), 0)
+    };
+
+    return { quotes, summary };
+  }
+
   async updateQuote(user, quoteId, updates) {
     if (!user) throw makeError('Authentication required', 401);
     const rec = await findById(quoteId);

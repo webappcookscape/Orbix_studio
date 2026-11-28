@@ -411,6 +411,7 @@ const SPA_VIEWS = [
   '/pricing',
   '/boq',
   '/quote',
+  '/quote-history',
   '/gallery',
   '/kitchen',
   '/sheet',

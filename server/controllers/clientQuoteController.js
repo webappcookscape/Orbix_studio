@@ -160,6 +160,21 @@ class ClientQuoteController {
     }
   }
 
+  // GET /api/client-quotes/history
+  async getQuoteHistory(req, res, next) {
+    try {
+      const { quotes, summary } = await clientQuoteService.listQuoteHistory(req.user);
+      res.setHeader('Cache-Control', 'no-store, private');
+      res.json({
+        success: true,
+        summary,
+        quotes: quotes.map((q) => decorateUrls(req, q))
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // GET /api/client-quotes/project/:projectId
   async listByProject(req, res, next) {
     try {

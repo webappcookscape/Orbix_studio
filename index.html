@@ -41,7 +41,7 @@
 <body>
   <!-- ARTIFACT-START -->
   <title>Orbix Studio</title>
-  <link rel="stylesheet" href="style.css?v=55">
+  <link rel="stylesheet" href="style.css?v=58">
 
   <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
   <div id="authScreen" class="auth-screen" style="display:flex;">
@@ -111,13 +111,22 @@
         <img src="logo.jpeg" alt="Orbix Studio" class="tool-logo">
         <span class="tool-name">Orbix&nbsp;Studio</span>
       </div>
-      <nav class="views" aria-label="View">
-        <button class="vtab is-on" data-view="home">Home</button>
-        <button class="vtab" data-view="plan">Floor Plan (2D)</button>
-        <button class="vtab" data-view="design">3D Studio</button>
-        <button class="vtab" data-view="elev" id="vtab-drawings">🏭 Production Studio</button>
-        <button class="vtab" data-view="boq">Pricing</button>
-      </nav>
+      <div class="views-scroll-wrap" id="viewsScrollWrap">
+        <button type="button" class="nav-scroll-arrow nav-scroll-left" id="navScrollLeftBtn" aria-label="Scroll menu left" title="Scroll menu left" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <nav class="views" id="topbarViewsNav" aria-label="View">
+          <button class="vtab is-on" data-view="home">Home</button>
+          <button class="vtab" data-view="plan">Floor Plan (2D)</button>
+          <button class="vtab" data-view="design">3D Studio</button>
+          <button class="vtab" data-view="elev" id="vtab-drawings">🏭 Production Studio</button>
+          <button class="vtab" data-view="boq">Pricing</button>
+          <button class="vtab" data-view="quote-history" id="vtab-quote-history">Quote History</button>
+        </nav>
+        <button type="button" class="nav-scroll-arrow nav-scroll-right" id="navScrollRightBtn" aria-label="Scroll menu right" title="Scroll menu right" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
       <div class="topacts">
         <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -132,19 +141,45 @@
           <span class="save-dot"></span>
           <span class="save-text">Auto-save 15s</span>
         </div>
-        <div id="liveSyncPresencePill" class="live-sync-pill" style="display:none;" title="Real-time multi-device collaboration active">
+        <div id="liveSyncPresencePill" class="live-sync-pill" hidden style="display:none !important;" title="Real-time multi-device collaboration active">
           <span class="live-pulse-dot"></span>
           <span id="liveSyncPresenceText" class="live-sync-text">Live Sync</span>
         </div>
         <div class="topbar-auth-group">
-          <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
+          <button type="button" class="user-avatar-btn" id="userAvatarBtn" aria-haspopup="menu" aria-expanded="false" title="Account &amp; Logout">
             <span class="u-avatar">CA</span>
-            <span class="u-name">Cookscape Admin</span>
+            <span class="u-role-pill badge-admin">Admin</span>
+            <svg class="u-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </button>
-          <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
         </div>
       </div>
     </header>
+
+    <!-- Nearby User Quick Menu Popover -->
+    <div class="user-quick-menu" id="userQuickMenu" role="menu" hidden>
+      <div class="uqm-head">
+        <span class="u-avatar big" id="uqAvatar">CA</span>
+        <div class="uqm-info">
+          <div class="uqm-name-row">
+            <strong id="uqName">Cookscape Admin</strong>
+            <span class="u-role-pill badge-admin" id="uqRoleBadge">Admin</span>
+          </div>
+          <div class="uqm-desig" id="uqDesig">System Administrator</div>
+          <div class="uqm-email" id="uqEmail">admin@cookscape.com</div>
+        </div>
+      </div>
+      <div class="uqm-actions">
+        <button type="button" class="uqm-item" id="uqOpenProfileBtn" role="menuitem">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span id="uqProfileLabel">Profile &amp; Team Settings</span>
+        </button>
+        <div class="uqm-sep"></div>
+        <button type="button" class="uqm-item uqm-logout" id="userLogoutBtn" role="menuitem">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
 
     <main id="main">
 
@@ -258,6 +293,164 @@
 
         </div>
       </section>
+
+      <!-- ══════ QUOTE HISTORY ══════ -->
+      <section class="view" id="view-quote-history">
+        <div class="qh-container">
+          <div class="projects-section qh-section">
+            <div class="psection-header qh-hero-header">
+              <div class="psection-title-wrap">
+                <span class="section-tag">QUOTATION AUDIT &amp; TRACKING</span>
+                <div class="psection-title-row">
+                  <h2 class="section-title">Quote History</h2>
+                  <span class="pcount-badge" id="qhTotalBadge">0 quotes</span>
+                </div>
+                <p class="qh-hero-sub">Track every quotation link with creator details, Business Head assignment, generation milestones, and live client opens.</p>
+              </div>
+              <div class="psection-acts" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="btn qh-btn-outline" id="qhExportCsvBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Export CSV</span>
+                </button>
+                <button type="button" class="btn primary" id="qhRefreshBtn">&circlearrowright; Refresh</button>
+              </div>
+            </div>
+
+            <!-- KPI Summary Strip -->
+            <div class="qh-kpis">
+              <div class="qh-kpi-card qh-kpi-accent-slate">
+                <div class="qh-kpi-top">
+                  <span class="qh-kpi-lbl">Total Quotes</span>
+                  <span class="qh-kpi-ico qh-ico-slate">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  </span>
+                </div>
+                <strong class="qh-kpi-val" id="qhKpiTotal">0</strong>
+                <span class="qh-kpi-sub">All review &amp; client links</span>
+              </div>
+              <div class="qh-kpi-card qh-kpi-accent-blue">
+                <div class="qh-kpi-top">
+                  <span class="qh-kpi-lbl">Active Client Links</span>
+                  <span class="qh-kpi-ico qh-ico-blue">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                  </span>
+                </div>
+                <strong class="qh-kpi-val qh-kpi-blue" id="qhKpiActive">0</strong>
+                <span class="qh-kpi-sub" id="qhKpiPendingSub">0 pending approval</span>
+              </div>
+              <div class="qh-kpi-card qh-kpi-accent-green">
+                <div class="qh-kpi-top">
+                  <span class="qh-kpi-lbl">Opened by Clients</span>
+                  <span class="qh-kpi-ico qh-ico-green">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </span>
+                </div>
+                <strong class="qh-kpi-val qh-kpi-green" id="qhKpiOpened">0</strong>
+                <div class="qh-kpi-bar-row">
+                  <div class="qh-kpi-bar"><span id="qhOpenRateBar" style="width:0%"></span></div>
+                  <span class="qh-kpi-sub" id="qhKpiOpenRate">0%</span>
+                </div>
+              </div>
+              <div class="qh-kpi-card qh-kpi-accent-red">
+                <div class="qh-kpi-top">
+                  <span class="qh-kpi-lbl">Total Client Opens</span>
+                  <span class="qh-kpi-ico qh-ico-red">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  </span>
+                </div>
+                <strong class="qh-kpi-val qh-kpi-red" id="qhKpiViews">0</strong>
+                <span class="qh-kpi-sub">Tracked portal sessions</span>
+              </div>
+            </div>
+
+            <!-- Two-Row Filter & Search Toolbar -->
+            <div class="ptoolbar">
+              <div class="ptoolbar-top">
+                <div class="psearch-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input type="text" id="qhSearchInput" placeholder="Search by client, quote code, user, BH, phone or location..." autocomplete="off">
+                  <button type="button" class="psearch-clear-btn" id="qhSearchClearBtn" title="Clear search" aria-label="Clear search" hidden>&times;</button>
+                </div>
+
+                <div class="pfilters">
+                  <button type="button" class="pfilter-btn qh-status-btn is-active" data-qh-status="all">All <span class="pfilter-cnt" data-qh-count="all">0</span></button>
+                  <button type="button" class="pfilter-btn qh-status-btn" data-qh-status="opened">Opened <span class="pfilter-cnt" data-qh-count="opened">0</span></button>
+                  <button type="button" class="pfilter-btn qh-status-btn" data-qh-status="unopened">Not Opened <span class="pfilter-cnt" data-qh-count="unopened">0</span></button>
+                  <button type="button" class="pfilter-btn qh-status-btn" data-qh-status="pending">Pending <span class="pfilter-cnt" data-qh-count="pending">0</span></button>
+                  <button type="button" class="pfilter-btn qh-status-btn" data-qh-status="active">Active <span class="pfilter-cnt" data-qh-count="active">0</span></button>
+                </div>
+              </div>
+
+              <div class="ptoolbar-filters">
+                <div class="pdropdown-filters">
+                  <span class="pfilter-bar-lbl">Filter by:</span>
+                  <!-- Filter by BH -->
+                  <div class="pdropdown-wrap">
+                    <button type="button" class="pdropdown-btn" id="qhBhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                      <span class="pdd-label" id="qhBhFilterLabel">Filter by BH</span>
+                      <span class="pdd-clear" id="qhBhFilterClear" title="Clear BH filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="pdropdown-menu" id="qhBhFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="qhBhFilterSearch" placeholder="Search BH name..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="qhBhFilterList"></div>
+                    </div>
+                  </div>
+
+                  <!-- Filter by User -->
+                  <div class="pdropdown-wrap">
+                    <button type="button" class="pdropdown-btn" id="qhUserFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                      <span class="pdd-label" id="qhUserFilterLabel">Filter by User</span>
+                      <span class="pdd-clear" id="qhUserFilterClear" title="Clear user filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <div class="pdropdown-menu" id="qhUserFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="qhUserFilterSearch" placeholder="Search user name..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="qhUserFilterList"></div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="pfilter-reset-btn" id="qhClearFiltersBtn" hidden>Clear Filters</button>
+                </div>
+
+                <div class="ptoolbar-meta" id="qhRangeSummary"></div>
+              </div>
+            </div>
+
+            <!-- Quote History Cards List (No Horizontal Overflow, Clean 4-Panel Cards) -->
+            <div class="qh-cards-list" id="qhCardsList">
+              <div class="qh-empty-box">Loading quote history...</div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="ppagination" id="qhPagination" hidden></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quote History Full Timeline Modal -->
+      <div class="orbix-modal" id="quoteHistoryTimelineModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog qh-modal-dialog">
+          <div class="modal-head">
+            <div>
+              <h3 class="modal-title" id="qhModalTitle">Quote Activity History</h3>
+              <p class="modal-sub" id="qhModalSub">User Details, BH Details, Generated &amp; Opened History</p>
+            </div>
+            <button class="modal-close-btn" type="button">&times;</button>
+          </div>
+          <div class="modal-body qh-modal-body" id="qhModalBody"></div>
+        </div>
+      </div>
 
       <!-- ══════ UPLOAD ══════ -->
       <section class="view" id="view-upload">
@@ -2364,14 +2557,14 @@
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=55'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=55'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=55'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=58'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=58'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=58'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=55');
+          return loadScript('orbix-a4-drawings.js?v=58');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -2388,17 +2581,18 @@
       return api;
     })();
   </script>
-  <script src="orbix-unit-icons.js?v=55"></script>
-  <script src="orbix-projects.js?v=55"></script>
-  <script src="orbix-live-sync.js?v=55"></script>
-  <script src="orbix-decors-catalog.js?v=55"></script>
-  <script src="orbix-core.js?v=55"></script>
-  <script src="orbix-plan.js?v=55"></script>
-  <script src="orbix-3d.js?v=55"></script>
-  <script src="orbix-ui.js?v=55"></script>
-  <script src="orbix-client-quote.js?v=55"></script>
-  <script src="app.js?v=55"></script>
-  <script src="pwa.js?v=55"></script>
+  <script src="orbix-unit-icons.js?v=58"></script>
+  <script src="orbix-projects.js?v=58"></script>
+  <script src="orbix-live-sync.js?v=58"></script>
+  <script src="orbix-decors-catalog.js?v=58"></script>
+  <script src="orbix-core.js?v=58"></script>
+  <script src="orbix-plan.js?v=58"></script>
+  <script src="orbix-3d.js?v=58"></script>
+  <script src="orbix-ui.js?v=58"></script>
+  <script src="orbix-client-quote.js?v=58"></script>
+  <script src="orbix-quote-history.js?v=58"></script>
+  <script src="app.js?v=58"></script>
+  <script src="pwa.js?v=58"></script>
   <!-- ARTIFACT-END -->
 </body>
 

@@ -6540,10 +6540,10 @@
   function setView(v) {
     // Check employee role restrictions
     if (window.OrbixProjects && window.OrbixProjects.currentUser && !window.OrbixProjects.isAdmin()) {
-      var allowed = ['home', 'plan', 'design', 'boq', 'elev'];
+      var allowed = ['home', 'plan', 'design', 'boq', 'elev', 'quote-history'];
       if (allowed.indexOf(v) === -1) {
         if (typeof showToast === 'function') {
-          showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+          showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, Pricing, and Quote History.');
         }
         v = 'home';
       }
@@ -6641,6 +6641,9 @@
       window.OrbixUI.editor.render();
     }
     if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }
+    if (v === "quote-history" && window.OrbixQuoteHistory && typeof window.OrbixQuoteHistory.onViewShown === 'function') {
+      window.OrbixQuoteHistory.onViewShown();
+    }
   }
   window.setView = setView;
   $all(".vtab").forEach(function (b) {

@@ -10,6 +10,7 @@ const { requireAuth } = require('../middlewares/authMiddleware');
 router.use(requireAuth);
 
 router.get('/whatsapp-status', clientQuoteController.getWhatsappStatus);
+router.get('/history', clientQuoteController.getQuoteHistory);
 router.post('/test-whatsapp', clientQuoteController.sendTestWhatsappAlert);
 router.post('/review', clientQuoteController.createReviewQuote);
 router.post('/', clientQuoteController.createQuote);

@@ -25,6 +25,7 @@
       '/pricing': 'boq',
       '/boq': 'boq',
       '/quote': 'quote',
+      '/quote-history': 'quote-history',
       '/gallery': 'gallery',
       '/kitchen': 'kitchen',
       '/sheet': 'sheet',
@@ -43,6 +44,7 @@
       'design': '/3d-studio',
       'boq': '/pricing',
       'quote': '/quote',
+      'quote-history': '/quote-history',
       'gallery': '/gallery',
       'kitchen': '/kitchen',
       'sheet': '/sheet',
@@ -54,7 +56,7 @@
       'users': '/users'
     },
 
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'elev', 'boq'],
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'],
 
     initialTargetView: (function () {
       var path = window.location.pathname.toLowerCase();
@@ -72,6 +74,7 @@
         '/pricing': 'boq',
         '/boq': 'boq',
         '/quote': 'quote',
+        '/quote-history': 'quote-history',
         '/gallery': 'gallery',
         '/kitchen': 'kitchen',
         '/sheet': 'sheet',
@@ -159,7 +162,7 @@
         if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
+            var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
             if (allowed.indexOf(v) === -1) {
               if (window.location.pathname !== '/home') {
                 self.updateUrl('home', false);
@@ -254,14 +257,14 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
+      var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
       if (allowed.indexOf(v) === -1) {
         v = 'home';
       }
 
       // If user jumps directly from Home to a workspace tab before clicking a project card,
       // seamlessly open their last active project (or newest project) on demand.
-      if (v !== 'home' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
+      if (v !== 'home' && v !== 'quote-history' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
         var pendingId = OrbixProjects._pendingAutoOpenProjectId;
         var toOpen = (pendingId && OrbixProjects.projects.find(function (p) { return p && String(p.id) === String(pendingId); })) || OrbixProjects.projects[0];
         if (toOpen && toOpen.id && typeof OrbixProjects.openProject === 'function') {
@@ -319,7 +322,7 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
+      var allowed = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
       if (!v || allowed.indexOf(v) === -1) {
         v = 'home';
       }
@@ -815,9 +818,9 @@
           self._pendingAutoOpenProjectId = toOpen ? toOpen.id : null;
 
           // Only eagerly download the full project when loading directly into a workspace view (/2d-plan, /3d-studio, /pricing, /drawings).
-          // On Home dashboard, keep post-login load instant and hydrate on demand when the user opens a project!
+          // On Home or Quote History dashboard, keep post-login load instant and hydrate on demand when the user opens a project!
           var initView = OrbixRouter.initialTargetView || OrbixRouter.getInitialView();
-          if (toOpen && initView && initView !== 'home' && initView !== 'login') {
+          if (toOpen && initView && initView !== 'home' && initView !== 'quote-history' && initView !== 'login') {
             self.openProject(toOpen.id, false);
           }
         }
@@ -1041,7 +1044,7 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowedViews = ['home', 'plan', 'design', 'elev', 'boq'];
+            var allowedViews = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
             if (allowedViews.indexOf(v) === -1) {
               origSetView('home');
               if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
@@ -1067,8 +1070,8 @@
         userModalEl.classList.toggle('role-employee', !isAdm);
         userModalEl.classList.toggle('role-admin', isAdm);
       }
-      // Pages visible for all users: Home, Floor Plan (2D), 3D Studio, 2D Drawings (A4), Pricing
-      var allowedViews = ['home', 'plan', 'design', 'elev', 'boq'];
+      // Pages visible for all users: Home, Floor Plan (2D), 3D Studio, 2D Drawings (A4), Pricing, Quote History
+      var allowedViews = ['home', 'plan', 'design', 'elev', 'boq', 'quote-history'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
@@ -1092,15 +1095,39 @@
         }
       }
 
-      // 3. Update topbar user avatar & role badge
+      // 3. Update topbar compact user avatar icon + role pill AND nearby quick popover menu
       var avatarEl = document.getElementById('userAvatarBtn');
       if (avatarEl && this.currentUser) {
         var roleLabel = isAdm ? 'Admin' : 'Employee';
         var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
+        var initials = this.currentUser.avatar || String(this.currentUser.name || 'US').trim().substring(0, 2).toUpperCase();
         avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' +
-          escHtml(this.currentUser.avatar || 'US') + '</span>' +
-          '<span class="u-name">' + escHtml(this.currentUser.name) + '</span>' +
-          '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
+          escHtml(initials) + '</span>' +
+          '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>' +
+          '<svg class="u-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+        avatarEl.title = (this.currentUser.name || 'User') + ' (' + roleLabel + ') — Account & Logout';
+
+        var uqAv = document.getElementById('uqAvatar');
+        var uqNm = document.getElementById('uqName');
+        var uqRb = document.getElementById('uqRoleBadge');
+        var uqDs = document.getElementById('uqDesig');
+        var uqEm = document.getElementById('uqEmail');
+        var uqPrLbl = document.getElementById('uqProfileLabel');
+        if (uqAv) {
+          uqAv.textContent = initials;
+          uqAv.className = 'u-avatar big ' + (isAdm ? 'is-admin-avatar' : '');
+        }
+        if (uqNm) uqNm.textContent = this.currentUser.name || 'Cookscape User';
+        if (uqRb) {
+          uqRb.textContent = roleLabel;
+          uqRb.className = 'u-role-pill ' + roleClass;
+        }
+        if (uqDs) uqDs.textContent = this.currentUser.designation || (isAdm ? 'System Administrator' : 'Floor Architect / FA');
+        if (uqEm) uqEm.textContent = this.currentUser.email || '';
+        if (uqPrLbl) uqPrLbl.textContent = isAdm ? 'Profile & Team Settings' : 'My Profile';
+      }
+      if (typeof this._updateNavScrollArrows === 'function') {
+        setTimeout(function () { OrbixProjects._updateNavScrollArrows(); }, 40);
       }
 
       // 4. Update Current User Card in Modal
@@ -4124,16 +4151,96 @@
         });
       }
 
-      // User Profile & Switcher Button in Topbar
+      // Topbar Menu Scroll Arrows (Left / Right)
+      var navEl = document.getElementById('topbarViewsNav');
+      var navLeftBtn = document.getElementById('navScrollLeftBtn');
+      var navRightBtn = document.getElementById('navScrollRightBtn');
+      this._updateNavScrollArrows = function () {
+        if (!navEl || !navLeftBtn || !navRightBtn) return;
+        var maxScroll = Math.max(0, navEl.scrollWidth - navEl.clientWidth);
+        var hasOverflow = maxScroll > 4;
+        navLeftBtn.hidden = !hasOverflow;
+        navRightBtn.hidden = !hasOverflow;
+        if (hasOverflow) {
+          navLeftBtn.disabled = navEl.scrollLeft <= 2;
+          navRightBtn.disabled = navEl.scrollLeft >= (maxScroll - 2);
+        }
+      };
+      if (navEl && navLeftBtn && navRightBtn) {
+        navLeftBtn.addEventListener('click', function () {
+          navEl.scrollBy({ left: -180, behavior: 'smooth' });
+        });
+        navRightBtn.addEventListener('click', function () {
+          navEl.scrollBy({ left: 180, behavior: 'smooth' });
+        });
+        navEl.addEventListener('scroll', self._updateNavScrollArrows);
+        window.addEventListener('resize', self._updateNavScrollArrows);
+        if (typeof ResizeObserver === 'function') {
+          try {
+            var ro = new ResizeObserver(function () { self._updateNavScrollArrows(); });
+            ro.observe(navEl);
+          } catch (_) { }
+        }
+        setTimeout(self._updateNavScrollArrows, 120);
+        setTimeout(self._updateNavScrollArrows, 600);
+      }
+
+      // Nearby User Quick Popover Menu (Icon + Role -> Popover with Profile & Logout)
       var userBtn = document.getElementById('userAvatarBtn');
+      var userQuickMenu = document.getElementById('userQuickMenu');
+      var uqProfileBtn = document.getElementById('uqOpenProfileBtn');
+      self.closeUserQuickMenu = function () {
+        if (userQuickMenu) userQuickMenu.hidden = true;
+        if (userBtn) {
+          userBtn.classList.remove('is-menu-open');
+          userBtn.setAttribute('aria-expanded', 'false');
+        }
+      };
       if (userBtn) {
-        userBtn.addEventListener('click', function () {
+        userBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (!userQuickMenu) {
+            self.openUserModal();
+            return;
+          }
+          var willOpen = userQuickMenu.hidden;
+          self._closeProjectFilterMenus();
+          if (willOpen) {
+            if (typeof userBtn.getBoundingClientRect === 'function') {
+              var rect = userBtn.getBoundingClientRect();
+              userQuickMenu.style.top = Math.round(rect.bottom + 8) + 'px';
+              var rightGap = Math.max(12, Math.round(window.innerWidth - rect.right));
+              userQuickMenu.style.right = rightGap + 'px';
+            }
+            userQuickMenu.hidden = false;
+            userBtn.classList.add('is-menu-open');
+            userBtn.setAttribute('aria-expanded', 'true');
+          } else {
+            self.closeUserQuickMenu();
+          }
+        });
+      }
+      if (userQuickMenu) {
+        userQuickMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+      }
+      if (uqProfileBtn) {
+        uqProfileBtn.addEventListener('click', function () {
+          self.closeUserQuickMenu();
           self.openUserModal();
         });
       }
+      document.addEventListener('click', function () {
+        if (typeof self.closeUserQuickMenu === 'function') self.closeUserQuickMenu();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && typeof self.closeUserQuickMenu === 'function') {
+          self.closeUserQuickMenu();
+        }
+      });
 
       // Logout buttons
       var handleLogout = function () {
+        if (typeof self.closeUserQuickMenu === 'function') self.closeUserQuickMenu();
         self.logout();
       };
       var logoutBtn = document.getElementById('userLogoutBtn');
