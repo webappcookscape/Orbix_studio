@@ -675,6 +675,138 @@ function extractValidatedVariantsAndIcons(snapInput) {
   return { variantQuotes, unitIcons };
 }
 
+function normAlphaNum(v) {
+  return String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function escapeRegexChars(s) {
+  return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildFlexibleNameRegex(name) {
+  const tokens = String(name || '').trim().split(/[\s.]+/).filter(Boolean);
+  if (!tokens.length) return null;
+  const body = tokens.map((t) => escapeRegexChars(t) + '\\.?').join('[\\s.]+');
+  return new RegExp('(?:^|\\b)' + body + '(?=\\b|\\s|\\(|$)', 'ig');
+}
+
+function resolveCleanPortalMeta(rec, linkedProj) {
+  const snap = (rec && rec.quoteSnapshot) || {};
+  const snapMeta = snap.meta || {};
+  const sec = (rec && rec.securitySettings) || {};
+
+  const clientName = String((rec && rec.clientName) || snapMeta.clientName || '').trim();
+  const clientKey = normAlphaNum(clientName);
+
+  const bhSet = new Set();
+  [
+    snapMeta.bhName,
+    linkedProj && linkedProj.bhName,
+    sec.bhName,
+    sec.approvedBy
+  ].forEach((b) => {
+    const clean = String(b || '').trim();
+    if (clean && normAlphaNum(clean) !== clientKey && clean.toLowerCase() !== 'unassigned') {
+      bhSet.add(clean);
+    }
+  });
+  const bhList = Array.from(bhSet);
+
+  const rawTitle = String(
+    snapMeta.projectName ||
+    snapMeta.title ||
+    (linkedProj && linkedProj.title) ||
+    (rec && rec.title) ||
+    ''
+  ).trim();
+
+  const rawSegments = rawTitle ? rawTitle.split(/\s+[—–-]\s+|\s*\|\s*/) : [];
+  const cleanedSegments = [];
+  const seenKeys = new Set();
+
+  rawSegments.forEach((rawSeg) => {
+    let seg = String(rawSeg || '').trim();
+    if (!seg) return;
+
+    // 1. Remove duplicate Client Name segments
+    if (clientKey && normAlphaNum(seg) === clientKey) return;
+
+    // 2. Strip any known BH Name from the segment
+    for (const bh of bhList) {
+      if (normAlphaNum(seg) === normAlphaNum(bh)) {
+        seg = '';
+        break;
+      }
+      const rx = buildFlexibleNameRegex(bh);
+      if (rx) seg = seg.replace(rx, ' ');
+    }
+
+    seg = seg.replace(/\s+/g, ' ').replace(/^[\s,:\-—–|]+|[\s,:\-—–|]+$/g, '').trim();
+    if (!seg) return;
+
+    // 3. Fallback: if an older quote lacks bhName metadata and segment is "<BH Person> (<Property/Project>)", keep only inner project
+    const parenLeadMatch = seg.match(/^([A-Za-z][A-Za-z.\s]{1,40})\(([^()]{3,})\)$/);
+    if (parenLeadMatch) {
+      const inner = parenLeadMatch[2].trim();
+      if (inner.indexOf(',') !== -1 || /^(apt|villa|flat|plot|house|home|office|ind|comm|\d\s*bhk)\b/i.test(inner)) {
+        seg = inner;
+      }
+    }
+
+    // 4. Unwrap outer parentheses left behind after stripping BH name (e.g. "(APT, Adroit Prosper)")
+    if (seg.startsWith('(') && seg.endsWith(')')) {
+      const unwrapped = seg.slice(1, -1).trim();
+      if (unwrapped && !/[()]/.test(unwrapped)) {
+        seg = unwrapped;
+      }
+    }
+
+    seg = seg.replace(/^[\s,:\-—–|]+|[\s,:\-—–|]+$/g, '').trim();
+    if (!seg) return;
+
+    const sk = normAlphaNum(seg);
+    if (!sk || (clientKey && sk === clientKey) || seenKeys.has(sk)) return;
+    seenKeys.add(sk);
+    cleanedSegments.push(seg);
+  });
+
+  const projectName = cleanedSegments.join(' — ') ||
+    String((rec && rec.siteAddress) || snapMeta.siteAddress || '').trim() ||
+    'Interior Proposal';
+
+  return {
+    clientName: clientName || 'Valued Client',
+    projectName,
+    quoteCode: String((rec && rec.quoteCode) || snapMeta.quoteId || '').trim()
+  };
+}
+
+async function lookupLinkedProjectMeta(projectId) {
+  if (!projectId || !prismaConfig.isConnected) return null;
+  try {
+    const rows = await prismaConfig.prisma.$queryRawUnsafe(
+      `SELECT
+        id,
+        title,
+        CASE WHEN jsonb_typeof(data) = 'object' THEN
+          COALESCE(
+            NULLIF(data->'details'->>'bhName', ''),
+            NULLIF(data->'plan'->'meta'->>'bhName', ''),
+            NULLIF(data->'details'->>'designerName', ''),
+            ''
+          )
+        ELSE '' END AS "bhName"
+       FROM projects
+       WHERE id = $1
+       LIMIT 1`,
+      String(projectId)
+    );
+    return (rows && rows[0]) || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 class ClientQuoteService {
   // Stage 1: Generate password-free Head Review Link (/quote-review/:reviewToken)
   async createReviewQuote(user, payload) {
@@ -1386,14 +1518,18 @@ class ClientQuoteService {
       sessionAuthEntry.token === shareToken &&
       sessionAuthEntry.username
     );
+    const linkedProj = await lookupLinkedProjectMeta(rec.projectId);
+    const cleanMeta = resolveCleanPortalMeta(rec, linkedProj);
     return {
       exists: true,
       active: status.active,
       reason: status.reason,
       authenticated: isAuthed,
-      quoteCode: rec.quoteCode || '',
-      title: rec.title || 'Cookscape Interior Quotation',
-      clientHint: isAuthed ? rec.clientName : ''
+      clientName: cleanMeta.clientName,
+      projectName: cleanMeta.projectName,
+      quoteCode: cleanMeta.quoteCode,
+      title: cleanMeta.projectName || 'Cookscape Interior Quotation',
+      clientHint: isAuthed ? cleanMeta.clientName : ''
     };
   }
 
@@ -1517,10 +1653,13 @@ class ClientQuoteService {
       })
     });
     const slides = quoteDeckBuilder.buildClientQuoteDeck(hydratedRec);
+    const linkedProj = await lookupLinkedProjectMeta(rec.projectId);
+    const cleanMeta = resolveCleanPortalMeta(rec, linkedProj);
     return {
-      title: rec.title,
-      quoteCode: rec.quoteCode || '',
-      clientName: rec.clientName,
+      title: cleanMeta.projectName || 'Cookscape Interior Quotation',
+      projectName: cleanMeta.projectName,
+      quoteCode: cleanMeta.quoteCode,
+      clientName: cleanMeta.clientName,
       watermarkText: '',
       securitySettings: {
         watermarkEnabled: false,

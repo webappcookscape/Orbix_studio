@@ -117,9 +117,43 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px 14px;
+      padding: 13px 15px;
       margin-bottom: 20px;
       font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .quote-ref-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      line-height: 1.4;
+    }
+
+    .quote-ref-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .quote-ref-val {
+      color: #f8fafc;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .quote-ref-val.is-ref {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #fca5a5;
+      font-size: 12.5px;
     }
 
     .quote-ref-box strong {
@@ -507,6 +541,18 @@
       <p class="auth-sub">Enter the username and password shared by your Cookscape designer to unlock your personalized quotation.</p>
 
       <div class="quote-ref-box" id="loginQuoteMeta">
+        <div class="quote-ref-row" id="metaClientRow" style="display:none;">
+          <span class="quote-ref-lbl">Client Name</span>
+          <span class="quote-ref-val" id="metaClientName">—</span>
+        </div>
+        <div class="quote-ref-row" id="metaProjectRow" style="display:none;">
+          <span class="quote-ref-lbl">Project Name</span>
+          <span class="quote-ref-val" id="metaProjectName">—</span>
+        </div>
+        <div class="quote-ref-row" id="metaRefRow" style="display:none;">
+          <span class="quote-ref-lbl">Reference ID</span>
+          <span class="quote-ref-val is-ref" id="metaRefCode">—</span>
+        </div>
         <strong id="metaTitle">Loading quotation details...</strong>
         <span id="metaCode" style="color:#94a3b8;font-size:12px;">Checking access link</span>
       </div>
@@ -654,6 +700,12 @@
         viewerShell: document.getElementById('viewerShell'),
         metaTitle: document.getElementById('metaTitle'),
         metaCode: document.getElementById('metaCode'),
+        metaClientRow: document.getElementById('metaClientRow'),
+        metaClientName: document.getElementById('metaClientName'),
+        metaProjectRow: document.getElementById('metaProjectRow'),
+        metaProjectName: document.getElementById('metaProjectName'),
+        metaRefRow: document.getElementById('metaRefRow'),
+        metaRefCode: document.getElementById('metaRefCode'),
         loginForm: document.getElementById('portalLoginForm'),
         loginSubmitBtn: document.getElementById('loginSubmitBtn'),
         loginError: document.getElementById('loginError'),
@@ -1926,14 +1978,34 @@
           });
           var info = await res.json();
           if (!info.exists || !info.active) {
-            els.metaTitle.textContent = info.title || 'Quotation Unavailable';
+            els.metaTitle.textContent = info.projectName || info.title || 'Quotation Unavailable';
             els.metaCode.textContent = info.reason || 'This quotation link is inactive.';
             els.loginForm.style.display = 'none';
             showError(info.reason || 'Quotation link is invalid, expired, or revoked.');
             return;
           }
-          els.metaTitle.textContent = info.title || 'Cookscape Interior Quotation';
-          els.metaCode.textContent = info.quoteCode ? ('Reference: ' + info.quoteCode) : 'Verified Protected Quote Link';
+          var clientLabel = (info.clientName || '').trim();
+          var projectLabel = (info.projectName || info.title || '').trim();
+          var refLabel = (info.quoteCode || '').trim();
+          if (clientLabel || projectLabel || refLabel) {
+            els.metaTitle.style.display = 'none';
+            els.metaCode.style.display = 'none';
+            if (clientLabel && els.metaClientRow && els.metaClientName) {
+              els.metaClientName.textContent = clientLabel;
+              els.metaClientRow.style.display = 'flex';
+            }
+            if (projectLabel && els.metaProjectRow && els.metaProjectName) {
+              els.metaProjectName.textContent = projectLabel;
+              els.metaProjectRow.style.display = 'flex';
+            }
+            if (refLabel && els.metaRefRow && els.metaRefCode) {
+              els.metaRefCode.textContent = refLabel;
+              els.metaRefRow.style.display = 'flex';
+            }
+          } else {
+            els.metaTitle.textContent = 'Cookscape Interior Quotation';
+            els.metaCode.textContent = 'Verified Protected Quote Link';
+          }
           if (info.isStaffView) state.isStaffView = true;
           if (info.authenticated) await loadAuthenticatedDeck();
         } catch (err) {
